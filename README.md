@@ -1,8 +1,22 @@
-# EzzCustoms Real Roblox Template Renderer with Fallback
+# EzzCustoms Official Roblox Template Layout
 
-This version draws a 585x559 Roblox classic clothing template layout in JavaScript.
+This version uses the uploaded Roblox Shirt Template and Pants Template images as base assets.
 
-If the AI request fails or times out, the site still creates a fallback Roblox template-style PNG from the prompt so users don't get stuck on an error.
+Panel sizes used:
+- Large square: 128 x 128
+- Tall rectangle: 64 x 128
+- Wide rectangle: 128 x 64
+- Small square: 64 x 64
 
 Required Netlify env variable:
 OPENAI_API_KEY = your OpenAI API key
+
+Upload/replace these in GitHub:
+- index.html
+- styles.css
+- script.js
+- netlify.toml
+- README.md
+- assets/roblox-shirt-template.png
+- assets/roblox-pants-template.png
+- netlify/functions/generate-image.js

@@ -40,17 +40,18 @@ exports.handler = async function (event) {
     }
 
     const finalPrompt = `
-Create a flat 2D clothing texture/pattern for Roblox classic ${assetType || "clothing"}.
+Create a seamless flat 2D clothing fabric texture for Roblox classic ${assetType || "clothing"}.
 
 User prompt: ${prompt}
 
 Important:
-- Do NOT create a full Roblox template layout.
-- Do NOT draw labels, panel names, or guide boxes.
-- Do NOT create a 3D render, mannequin, pants model, hoodie model, or floating item.
-- Create only the fabric/design texture that will be placed onto an official Roblox classic clothing template by code.
-- Square image, clean texture, high contrast, suitable for Roblox clothing.
+- Output ONLY the fabric/design texture.
+- Do NOT draw a Roblox template.
+- Do NOT include template labels like FRONT, BACK, L, R, UP, DOWN.
+- Do NOT create a 3D render, mannequin, hoodie, jeans model, or floating clothing item.
+- Make a square texture/pattern that can be placed inside official Roblox clothing template panels.
 - No copyrighted logos or real brand names.
+- High contrast, clean Roblox clothing style, usable for shirt or pants panels.
 `;
 
     const response = await fetch("https://api.openai.com/v1/images/generations", {

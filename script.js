@@ -62,7 +62,7 @@ generateBtn.addEventListener("click", async () => {
     try {
       data = JSON.parse(text);
     } catch {
-      throw new Error("Netlify returned HTML instead of the function. Check the site/project you deployed.");
+      throw new Error("Netlify returned HTML instead of JSON. Check the function deployment.");
     }
 
     if (!response.ok) {
@@ -73,12 +73,12 @@ generateBtn.addEventListener("click", async () => {
 
     if (selectedType === "Shirt" || selectedType === "Pants") {
       lastGeneratedImage = await createRobloxTemplate(data.image, selectedType, prompt);
-      previewTitle.textContent = `${selectedType} Roblox template ready`;
+      previewTitle.textContent = `${selectedType} official Roblox template ready`;
 
       previewBox.innerHTML = `
         <div class="generated-card template-card">
-          <img src="${lastGeneratedImage}" alt="Generated Roblox template" style="width:100%; border-radius:12px; background:white;" />
-          <p>Roblox classic ${selectedType.toLowerCase()} template generated from: ${escapeHTML(prompt)}</p>
+          <img src="${lastGeneratedImage}" alt="Generated Roblox template" style="width:100%; border-radius:12px; background:#ddd;" />
+          <p>Official ${selectedType.toLowerCase()} template layout generated from: ${escapeHTML(prompt)}</p>
         </div>
       `;
     } else {
@@ -93,16 +93,17 @@ generateBtn.addEventListener("click", async () => {
       `;
     }
   } catch (error) {
+    // If OpenAI fails, still create the Roblox template using a local fallback pattern.
     if (selectedType === "Shirt" || selectedType === "Pants") {
       const fallbackTexture = createFallbackTexture(prompt, selectedType);
       lastGeneratedImage = await createRobloxTemplate(fallbackTexture, selectedType, prompt);
       lastPrompt = prompt;
-      previewTitle.textContent = `${selectedType} Roblox template ready`;
+      previewTitle.textContent = `${selectedType} official Roblox template ready`;
 
       previewBox.innerHTML = `
         <div class="generated-card template-card">
-          <img src="${lastGeneratedImage}" alt="Generated Roblox template" style="width:100%; border-radius:12px; background:white;" />
-          <p>Fallback template created because the AI request failed: ${escapeHTML(error.message)}</p>
+          <img src="${lastGeneratedImage}" alt="Generated Roblox template" style="width:100%; border-radius:12px; background:#ddd;" />
+          <p>Fallback template created because AI failed: ${escapeHTML(error.message)}</p>
         </div>
       `;
       return;
@@ -142,169 +143,150 @@ document.querySelectorAll(".download-row button")[2]?.addEventListener("click", 
 
 async function createRobloxTemplate(textureSrc, type, prompt) {
   const canvas = document.createElement("canvas");
-
-  // Roblox classic clothing template size.
   canvas.width = 585;
   canvas.height = 559;
 
   const ctx = canvas.getContext("2d");
   const texture = await loadImage(textureSrc);
+  const base = await loadImage(type === "Pants" ? "/assets/roblox-pants-template.png" : "/assets/roblox-shirt-template.png");
 
-  // White official-template-style background.
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Start from the exact Roblox template image provided by the user.
+  ctx.drawImage(base, 0, 0, 585, 559);
 
-  if (type === "Shirt") {
-    drawShirtTemplate(ctx, texture);
-  } else {
-    drawPantsTemplate(ctx, texture);
-  }
+  const panels = type === "Pants" ? getOfficialPantsPanels() : getOfficialShirtPanels();
 
-  drawTemplateGuides(ctx, type);
+  // Fill only the proper clothing panels using the official sizes:
+  // large square 128x128, tall rectangle 64x128, wide rectangle 128x64, small square 64x64.
+  panels.forEach((panel, i) => {
+    fillOfficialPanel(ctx, texture, panel, i);
+  });
+
+  // Redraw clean red panel borders so it remains visibly Roblox-template-shaped.
+  drawOfficialTemplateOutlines(ctx, panels, type);
+
   return canvas.toDataURL("image/png");
 }
 
-function drawShirtTemplate(ctx, texture) {
-  const panels = [
-    // Torso row
-    { x: 231, y: 74, w: 128, h: 128, label: "TORSO FRONT" },
-    { x: 231, y: 330, w: 128, h: 128, label: "TORSO BACK" },
-    { x: 231, y: 202, w: 128, h: 64, label: "TORSO TOP" },
-    { x: 231, y: 266, w: 128, h: 64, label: "TORSO BOTTOM" },
-    { x: 167, y: 202, w: 64, h: 128, label: "TORSO LEFT" },
-    { x: 359, y: 202, w: 64, h: 128, label: "TORSO RIGHT" },
-
-    // Left arm
-    { x: 39, y: 74, w: 64, h: 128, label: "L ARM FRONT" },
-    { x: 103, y: 74, w: 64, h: 128, label: "L ARM SIDE" },
-    { x: 39, y: 202, w: 64, h: 64, label: "L ARM TOP" },
-    { x: 103, y: 202, w: 64, h: 64, label: "L ARM BOTTOM" },
-    { x: 39, y: 266, w: 64, h: 128, label: "L ARM BACK" },
-    { x: 103, y: 266, w: 64, h: 128, label: "L ARM SIDE" },
+function getOfficialShirtPanels() {
+  return [
+    // Torso
+    { x: 230, y: 8, w: 128, h: 64, label: "UP" },
+    { x: 165, y: 74, w: 64, h: 128, label: "R" },
+    { x: 230, y: 74, w: 128, h: 128, label: "FRONT" },
+    { x: 360, y: 74, w: 64, h: 128, label: "L" },
+    { x: 426, y: 74, w: 128, h: 128, label: "BACK" },
+    { x: 230, y: 204, w: 128, h: 64, label: "DOWN" },
 
     // Right arm
-    { x: 423, y: 74, w: 64, h: 128, label: "R ARM FRONT" },
-    { x: 487, y: 74, w: 64, h: 128, label: "R ARM SIDE" },
-    { x: 423, y: 202, w: 64, h: 64, label: "R ARM TOP" },
-    { x: 487, y: 202, w: 64, h: 64, label: "R ARM BOTTOM" },
-    { x: 423, y: 266, w: 64, h: 128, label: "R ARM BACK" },
-    { x: 487, y: 266, w: 64, h: 128, label: "R ARM SIDE" },
-  ];
+    { x: 18, y: 356, w: 64, h: 128, label: "L" },
+    { x: 84, y: 356, w: 64, h: 128, label: "B" },
+    { x: 150, y: 356, w: 64, h: 128, label: "R" },
+    { x: 216, y: 356, w: 64, h: 128, label: "F" },
+    { x: 216, y: 290, w: 64, h: 64, label: "U" },
+    { x: 216, y: 485, w: 64, h: 64, label: "D" },
 
-  panels.forEach((p, i) => fillPanel(ctx, texture, p, i));
+    // Left arm
+    { x: 308, y: 290, w: 64, h: 64, label: "U" },
+    { x: 308, y: 356, w: 64, h: 128, label: "F" },
+    { x: 374, y: 356, w: 64, h: 128, label: "L" },
+    { x: 440, y: 356, w: 64, h: 128, label: "B" },
+    { x: 506, y: 356, w: 64, h: 128, label: "R" },
+    { x: 308, y: 485, w: 64, h: 64, label: "D" },
+  ];
 }
 
-function drawPantsTemplate(ctx, texture) {
-  const panels = [
-    // Left leg group
-    { x: 103, y: 74, w: 64, h: 128, label: "L LEG FRONT" },
-    { x: 167, y: 74, w: 64, h: 128, label: "L LEG SIDE" },
-    { x: 103, y: 202, w: 64, h: 64, label: "L LEG TOP" },
-    { x: 167, y: 202, w: 64, h: 64, label: "L LEG BOTTOM" },
-    { x: 103, y: 266, w: 64, h: 128, label: "L LEG BACK" },
-    { x: 167, y: 266, w: 64, h: 128, label: "L LEG SIDE" },
+function getOfficialPantsPanels() {
+  return [
+    // Waist/torso area on pants template
+    { x: 230, y: 8, w: 128, h: 64, label: "UP" },
+    { x: 165, y: 74, w: 64, h: 128, label: "R" },
+    { x: 230, y: 74, w: 128, h: 128, label: "FRONT" },
+    { x: 360, y: 74, w: 64, h: 128, label: "L" },
+    { x: 426, y: 74, w: 128, h: 128, label: "BACK" },
+    { x: 230, y: 204, w: 128, h: 64, label: "DOWN" },
 
-    // Right leg group
-    { x: 359, y: 74, w: 64, h: 128, label: "R LEG FRONT" },
-    { x: 423, y: 74, w: 64, h: 128, label: "R LEG SIDE" },
-    { x: 359, y: 202, w: 64, h: 64, label: "R LEG TOP" },
-    { x: 423, y: 202, w: 64, h: 64, label: "R LEG BOTTOM" },
-    { x: 359, y: 266, w: 64, h: 128, label: "R LEG BACK" },
-    { x: 423, y: 266, w: 64, h: 128, label: "R LEG SIDE" },
+    // Right leg
+    { x: 18, y: 356, w: 64, h: 128, label: "L" },
+    { x: 84, y: 356, w: 64, h: 128, label: "B" },
+    { x: 150, y: 356, w: 64, h: 128, label: "R" },
+    { x: 216, y: 356, w: 64, h: 128, label: "F" },
+    { x: 216, y: 290, w: 64, h: 64, label: "U" },
+    { x: 216, y: 485, w: 64, h: 64, label: "D" },
 
-    // Waist/hips
-    { x: 231, y: 74, w: 128, h: 64, label: "WAIST FRONT" },
-    { x: 231, y: 138, w: 128, h: 64, label: "WAIST BACK" },
+    // Left leg
+    { x: 308, y: 290, w: 64, h: 64, label: "U" },
+    { x: 308, y: 356, w: 64, h: 128, label: "F" },
+    { x: 374, y: 356, w: 64, h: 128, label: "L" },
+    { x: 440, y: 356, w: 64, h: 128, label: "B" },
+    { x: 506, y: 356, w: 64, h: 128, label: "R" },
+    { x: 308, y: 485, w: 64, h: 64, label: "D" },
   ];
-
-  panels.forEach((p, i) => fillPanel(ctx, texture, p, i));
 }
 
-function fillPanel(ctx, texture, p, i) {
+function fillOfficialPanel(ctx, texture, p, i) {
   ctx.save();
   ctx.beginPath();
   ctx.rect(p.x, p.y, p.w, p.h);
   ctx.clip();
 
-  // Use different texture crops so the template feels designed, not copied.
-  const sx = (i * 97) % (texture.width - 260);
-  const sy = (i * 151) % (texture.height - 260);
-  ctx.drawImage(texture, Math.max(0, sx), Math.max(0, sy), 260, 260, p.x, p.y, p.w, p.h);
+  const cropSize = 330;
+  const sx = Math.max(0, ((i * 113) % Math.max(1, texture.width - cropSize)));
+  const sy = Math.max(0, ((i * 179) % Math.max(1, texture.height - cropSize)));
 
-  // Add subtle shading for panel depth.
+  ctx.globalAlpha = 0.92;
+  ctx.drawImage(texture, sx, sy, cropSize, cropSize, p.x, p.y, p.w, p.h);
+
+  // Add subtle seams / shading to make panel direction readable.
   const grad = ctx.createLinearGradient(p.x, p.y, p.x + p.w, p.y + p.h);
-  grad.addColorStop(0, "rgba(255,255,255,0.16)");
-  grad.addColorStop(0.5, "rgba(255,255,255,0)");
-  grad.addColorStop(1, "rgba(0,0,0,0.18)");
+  grad.addColorStop(0, "rgba(255,255,255,0.20)");
+  grad.addColorStop(0.52, "rgba(255,255,255,0)");
+  grad.addColorStop(1, "rgba(0,0,0,0.20)");
+  ctx.globalAlpha = 1;
   ctx.fillStyle = grad;
   ctx.fillRect(p.x, p.y, p.w, p.h);
 
   ctx.restore();
 }
 
-function drawTemplateGuides(ctx, type) {
+function drawOfficialTemplateOutlines(ctx, panels, type) {
+  ctx.save();
+
+  // Panel borders
+  ctx.strokeStyle = "rgba(255,0,0,0.9)";
   ctx.lineWidth = 1;
-  ctx.strokeStyle = "rgba(255, 0, 0, 0.8)";
-  ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
-  ctx.font = "bold 9px Arial";
-
-  const guidePanels = type === "Shirt" ? [
-    { x: 231, y: 74, w: 128, h: 128, label: "TORSO FRONT" },
-    { x: 231, y: 330, w: 128, h: 128, label: "TORSO BACK" },
-    { x: 167, y: 202, w: 64, h: 128, label: "LEFT TORSO" },
-    { x: 359, y: 202, w: 64, h: 128, label: "RIGHT TORSO" },
-    { x: 39, y: 74, w: 128, h: 320, label: "LEFT ARM" },
-    { x: 423, y: 74, w: 128, h: 320, label: "RIGHT ARM" },
-  ] : [
-    { x: 103, y: 74, w: 128, h: 320, label: "LEFT LEG" },
-    { x: 359, y: 74, w: 128, h: 320, label: "RIGHT LEG" },
-    { x: 231, y: 74, w: 128, h: 128, label: "WAIST" },
-  ];
-
-  // Draw all panel outlines from actual fill panels again for Roblox template look.
-  const allPanels = type === "Shirt" ? getShirtPanelsForGuide() : getPantsPanelsForGuide();
-  allPanels.forEach((p) => {
+  panels.forEach((p) => {
     ctx.strokeRect(p.x, p.y, p.w, p.h);
   });
 
-  guidePanels.forEach((p) => {
-    ctx.fillText(p.label, p.x + 4, p.y + 13);
+  // Dotted maximum-height line on tall panels from Roblox template.
+  ctx.setLineDash([4, 3]);
+  ctx.strokeStyle = "rgba(255,255,255,0.75)";
+  panels.filter(p => p.h === 128).forEach((p) => {
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y + 64);
+    ctx.lineTo(p.x + p.w, p.y + 64);
+    ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  // Labels for clear orientation
+  ctx.font = "bold 18px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  panels.forEach((p) => {
+    ctx.fillStyle = "rgba(0,0,0,0.42)";
+    ctx.fillRect(p.x + 3, p.y + 3, Math.min(p.w - 6, 72), 22);
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.fillText(p.label, p.x + Math.min(p.w / 2, 38), p.y + 15);
   });
 
-  ctx.fillStyle = "#111";
-  ctx.font = "bold 14px Arial";
-  ctx.fillText(type === "Shirt" ? "ROBLOX CLASSIC SHIRT TEMPLATE" : "ROBLOX CLASSIC PANTS TEMPLATE", 168, 35);
+  ctx.fillStyle = "rgba(0,0,0,0.72)";
+  ctx.font = "bold 16px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText(type === "Pants" ? "ROBLOX Pants Template" : "ROBLOX Shirt Template", 444, 294);
 
-  ctx.font = "10px Arial";
-  ctx.fillText("585 x 559 classic clothing template layout", 197, 52);
+  ctx.restore();
 }
-
-function getShirtPanelsForGuide() {
-  return [
-    { x: 231, y: 74, w: 128, h: 128 }, { x: 231, y: 330, w: 128, h: 128 },
-    { x: 231, y: 202, w: 128, h: 64 }, { x: 231, y: 266, w: 128, h: 64 },
-    { x: 167, y: 202, w: 64, h: 128 }, { x: 359, y: 202, w: 64, h: 128 },
-    { x: 39, y: 74, w: 64, h: 128 }, { x: 103, y: 74, w: 64, h: 128 },
-    { x: 39, y: 202, w: 64, h: 64 }, { x: 103, y: 202, w: 64, h: 64 },
-    { x: 39, y: 266, w: 64, h: 128 }, { x: 103, y: 266, w: 64, h: 128 },
-    { x: 423, y: 74, w: 64, h: 128 }, { x: 487, y: 74, w: 64, h: 128 },
-    { x: 423, y: 202, w: 64, h: 64 }, { x: 487, y: 202, w: 64, h: 64 },
-    { x: 423, y: 266, w: 64, h: 128 }, { x: 487, y: 266, w: 64, h: 128 },
-  ];
-}
-
-function getPantsPanelsForGuide() {
-  return [
-    { x: 103, y: 74, w: 64, h: 128 }, { x: 167, y: 74, w: 64, h: 128 },
-    { x: 103, y: 202, w: 64, h: 64 }, { x: 167, y: 202, w: 64, h: 64 },
-    { x: 103, y: 266, w: 64, h: 128 }, { x: 167, y: 266, w: 64, h: 128 },
-    { x: 359, y: 74, w: 64, h: 128 }, { x: 423, y: 74, w: 64, h: 128 },
-    { x: 359, y: 202, w: 64, h: 64 }, { x: 423, y: 202, w: 64, h: 64 },
-    { x: 359, y: 266, w: 64, h: 128 }, { x: 423, y: 266, w: 64, h: 128 },
-    { x: 231, y: 74, w: 128, h: 64 }, { x: 231, y: 138, w: 128, h: 64 },
-  ];
-}
-
 
 function createFallbackTexture(prompt, type) {
   const canvas = document.createElement("canvas");
@@ -322,6 +304,10 @@ function createFallbackTexture(prompt, type) {
     bg1 = "#f9a8d4";
     bg2 = "#f472b6";
     accent = "#111827";
+  } else if (lower.includes("black")) {
+    bg1 = "#020617";
+    bg2 = "#111827";
+    accent = lower.includes("red") ? "#ef4444" : "#e5e7eb";
   } else if (lower.includes("red")) {
     bg1 = "#050505";
     bg2 = "#dc2626";
@@ -346,17 +332,25 @@ function createFallbackTexture(prompt, type) {
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 1024, 1024);
 
-  // Streetwear grid/seams
-  ctx.strokeStyle = "rgba(255,255,255,0.22)";
-  ctx.lineWidth = 4;
-  for (let i = 0; i < 1024; i += 96) {
-    ctx.beginPath();
-    ctx.moveTo(i, 0);
-    ctx.lineTo(i + 220, 1024);
-    ctx.stroke();
+  // Fabric grain
+  for (let i = 0; i < 250; i++) {
+    ctx.fillStyle = `rgba(255,255,255,${0.03 + (i % 7) * 0.006})`;
+    ctx.fillRect((i * 47) % 1024, (i * 91) % 1024, 220, 2);
   }
 
-  // Stars
+  if (lower.includes("ripped")) {
+    ctx.strokeStyle = "rgba(255,255,255,0.75)";
+    ctx.lineWidth = 5;
+    for (let i = 0; i < 12; i++) {
+      const x = 100 + (i * 73) % 800;
+      const y = 120 + (i * 131) % 780;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.bezierCurveTo(x + 40, y - 20, x + 90, y + 20, x + 140, y - 12);
+      ctx.stroke();
+    }
+  }
+
   if (lower.includes("star")) {
     ctx.fillStyle = accent;
     for (let i = 0; i < 36; i++) {
@@ -366,21 +360,19 @@ function createFallbackTexture(prompt, type) {
     }
   }
 
-  // Chains
   if (lower.includes("chain")) {
     ctx.strokeStyle = "rgba(240,240,240,0.75)";
     ctx.lineWidth = 12;
     for (let row = 0; row < 4; row++) {
-      ctx.beginPath();
-      for (let x = -60; x < 1100; x += 40) {
+      for (let x = -60; x < 1100; x += 42) {
         const y = 160 + row * 210 + Math.sin(x / 45) * 22;
+        ctx.beginPath();
         ctx.ellipse(x, y, 18, 9, Math.PI / 5, 0, Math.PI * 2);
+        ctx.stroke();
       }
-      ctx.stroke();
     }
   }
 
-  // Cyber glow
   if (lower.includes("cyber") || lower.includes("glow")) {
     ctx.shadowColor = accent;
     ctx.shadowBlur = 30;
@@ -392,30 +384,12 @@ function createFallbackTexture(prompt, type) {
     ctx.shadowBlur = 0;
   }
 
-  // Skull-ish emblem
   if (lower.includes("skull")) {
     ctx.fillStyle = accent;
     ctx.font = "bold 220px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("☠", 512, 512);
-  }
-
-  // Hoodie seams or pants seams as texture
-  ctx.strokeStyle = "rgba(0,0,0,0.35)";
-  ctx.lineWidth = 8;
-  if (type === "Pants") {
-    ctx.beginPath();
-    ctx.moveTo(512, 0);
-    ctx.lineTo(512, 1024);
-    ctx.stroke();
-  } else {
-    ctx.beginPath();
-    ctx.moveTo(0, 210);
-    ctx.lineTo(1024, 210);
-    ctx.moveTo(0, 812);
-    ctx.lineTo(1024, 812);
-    ctx.stroke();
   }
 
   return canvas.toDataURL("image/png");
@@ -444,7 +418,6 @@ function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
   ctx.closePath();
   ctx.fill();
 }
-
 
 function loadImage(src) {
   return new Promise((resolve, reject) => {
