@@ -93,6 +93,21 @@ generateBtn.addEventListener("click", async () => {
       `;
     }
   } catch (error) {
+    if (selectedType === "Shirt" || selectedType === "Pants") {
+      const fallbackTexture = createFallbackTexture(prompt, selectedType);
+      lastGeneratedImage = await createRobloxTemplate(fallbackTexture, selectedType, prompt);
+      lastPrompt = prompt;
+      previewTitle.textContent = `${selectedType} Roblox template ready`;
+
+      previewBox.innerHTML = `
+        <div class="generated-card template-card">
+          <img src="${lastGeneratedImage}" alt="Generated Roblox template" style="width:100%; border-radius:12px; background:white;" />
+          <p>Fallback template created because the AI request failed: ${escapeHTML(error.message)}</p>
+        </div>
+      `;
+      return;
+    }
+
     previewTitle.textContent = "Generation failed";
     previewBox.innerHTML = `
       <div class="empty-state">
@@ -289,6 +304,147 @@ function getPantsPanelsForGuide() {
     { x: 231, y: 74, w: 128, h: 64 }, { x: 231, y: 138, w: 128, h: 64 },
   ];
 }
+
+
+function createFallbackTexture(prompt, type) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const ctx = canvas.getContext("2d");
+
+  const lower = prompt.toLowerCase();
+
+  let bg1 = "#111827";
+  let bg2 = "#ef4444";
+  let accent = "#38bdf8";
+
+  if (lower.includes("pink")) {
+    bg1 = "#f9a8d4";
+    bg2 = "#f472b6";
+    accent = "#111827";
+  } else if (lower.includes("red")) {
+    bg1 = "#050505";
+    bg2 = "#dc2626";
+    accent = "#f97316";
+  } else if (lower.includes("blue")) {
+    bg1 = "#020617";
+    bg2 = "#2563eb";
+    accent = "#67e8f9";
+  } else if (lower.includes("green")) {
+    bg1 = "#052e16";
+    bg2 = "#22c55e";
+    accent = "#bbf7d0";
+  } else if (lower.includes("white")) {
+    bg1 = "#f8fafc";
+    bg2 = "#cbd5e1";
+    accent = "#111827";
+  }
+
+  const grad = ctx.createLinearGradient(0, 0, 1024, 1024);
+  grad.addColorStop(0, bg1);
+  grad.addColorStop(1, bg2);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1024, 1024);
+
+  // Streetwear grid/seams
+  ctx.strokeStyle = "rgba(255,255,255,0.22)";
+  ctx.lineWidth = 4;
+  for (let i = 0; i < 1024; i += 96) {
+    ctx.beginPath();
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i + 220, 1024);
+    ctx.stroke();
+  }
+
+  // Stars
+  if (lower.includes("star")) {
+    ctx.fillStyle = accent;
+    for (let i = 0; i < 36; i++) {
+      const x = (i * 151) % 1000 + 12;
+      const y = (i * 227) % 1000 + 12;
+      drawStar(ctx, x, y, 5, 22, 10);
+    }
+  }
+
+  // Chains
+  if (lower.includes("chain")) {
+    ctx.strokeStyle = "rgba(240,240,240,0.75)";
+    ctx.lineWidth = 12;
+    for (let row = 0; row < 4; row++) {
+      ctx.beginPath();
+      for (let x = -60; x < 1100; x += 40) {
+        const y = 160 + row * 210 + Math.sin(x / 45) * 22;
+        ctx.ellipse(x, y, 18, 9, Math.PI / 5, 0, Math.PI * 2);
+      }
+      ctx.stroke();
+    }
+  }
+
+  // Cyber glow
+  if (lower.includes("cyber") || lower.includes("glow")) {
+    ctx.shadowColor = accent;
+    ctx.shadowBlur = 30;
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 10;
+    for (let i = 0; i < 8; i++) {
+      ctx.strokeRect(120 + i * 36, 120 + i * 36, 780 - i * 72, 780 - i * 72);
+    }
+    ctx.shadowBlur = 0;
+  }
+
+  // Skull-ish emblem
+  if (lower.includes("skull")) {
+    ctx.fillStyle = accent;
+    ctx.font = "bold 220px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("☠", 512, 512);
+  }
+
+  // Hoodie seams or pants seams as texture
+  ctx.strokeStyle = "rgba(0,0,0,0.35)";
+  ctx.lineWidth = 8;
+  if (type === "Pants") {
+    ctx.beginPath();
+    ctx.moveTo(512, 0);
+    ctx.lineTo(512, 1024);
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(0, 210);
+    ctx.lineTo(1024, 210);
+    ctx.moveTo(0, 812);
+    ctx.lineTo(1024, 812);
+    ctx.stroke();
+  }
+
+  return canvas.toDataURL("image/png");
+}
+
+function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+  let rot = Math.PI / 2 * 3;
+  let x = cx;
+  let y = cy;
+  const step = Math.PI / spikes;
+
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - outerRadius);
+  for (let i = 0; i < spikes; i++) {
+    x = cx + Math.cos(rot) * outerRadius;
+    y = cy + Math.sin(rot) * outerRadius;
+    ctx.lineTo(x, y);
+    rot += step;
+
+    x = cx + Math.cos(rot) * innerRadius;
+    y = cy + Math.sin(rot) * innerRadius;
+    ctx.lineTo(x, y);
+    rot += step;
+  }
+  ctx.lineTo(cx, cy - outerRadius);
+  ctx.closePath();
+  ctx.fill();
+}
+
 
 function loadImage(src) {
   return new Promise((resolve, reject) => {

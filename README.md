@@ -1,16 +1,8 @@
-# EzzCustoms Real Roblox Template Renderer
+# EzzCustoms Real Roblox Template Renderer with Fallback
 
-This version does NOT ask AI to draw the template.
-It uses JavaScript canvas to draw a 585x559 Roblox classic clothing template layout and fills the panels with an AI-generated texture.
+This version draws a 585x559 Roblox classic clothing template layout in JavaScript.
 
-## Netlify environment variable
+If the AI request fails or times out, the site still creates a fallback Roblox template-style PNG from the prompt so users don't get stuck on an error.
+
+Required Netlify env variable:
 OPENAI_API_KEY = your OpenAI API key
-
-## Deploy
-Upload/replace these files in GitHub:
-- index.html
-- styles.css
-- script.js
-- netlify.toml
-- README.md
-- netlify/functions/generate-image.js
