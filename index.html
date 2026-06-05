@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EzzCustoms | Roblox AI UGC & Clothing Generator</title>
+  <meta name="description" content="Create Roblox clothing and UGC concepts from a simple prompt with EzzCustoms." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="noise"></div>
+  <header class="nav">
+    <a class="brand" href="#">
+      <span class="brand-mark">EZ</span>
+      <span>EzzCustoms</span>
+    </a>
+
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="#generator">Generator</a>
+      <a href="#templates">Templates</a>
+      <a href="#styles">Styles</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+
+    <a class="nav-cta" href="#generator">Start Creating</a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Roblox creator tools, upgraded</p>
+        <h1>Create Roblox UGC & Clothing With AI</h1>
+        <p class="hero-text">
+          Turn simple prompts into Roblox shirt ideas, pants concepts, t-shirt graphics,
+          and UGC item designs in seconds.
+        </p>
+
+        <div class="hero-actions">
+          <a class="primary-btn" href="#generator">Generate Design</a>
+          <a class="secondary-btn" href="#templates">View Templates</a>
+        </div>
+
+        <div class="stats">
+          <div>
+            <strong>4</strong>
+            <span>Asset types</span>
+          </div>
+          <div>
+            <strong>12+</strong>
+            <span>Style presets</span>
+          </div>
+          <div>
+            <strong>Fast</strong>
+            <span>Prompt workflow</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-card" aria-label="Website preview card">
+        <div class="mock-window">
+          <div class="dots">
+            <span></span><span></span><span></span>
+          </div>
+          <p>Prompt preview</p>
+        </div>
+        <div class="floating-preview">
+          <span class="tag">Hoodie</span>
+          <h3>Black cyber hoodie</h3>
+          <p>Glowing blue skull logo, neon seams, clean Roblox-ready concept.</p>
+          <div class="mock-shirt">
+            <div class="shirt-glow"></div>
+            <div class="shirt-body"></div>
+            <div class="shirt-logo">☠</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="generator" class="generator-section">
+      <div class="section-heading">
+        <p class="eyebrow">Generator</p>
+        <h2>Describe it. Pick a type. Preview the idea.</h2>
+        <p>Use this as your front page generator. Hook it to a real image API later when you are ready.</p>
+      </div>
+
+      <div class="generator-grid">
+        <div class="control-card">
+          <label class="label">Choose asset type</label>
+          <div class="asset-buttons">
+            <button class="asset-btn active" data-type="Shirt">👕 Shirt</button>
+            <button class="asset-btn" data-type="Pants">👖 Pants</button>
+            <button class="asset-btn" data-type="T-Shirt">🎨 T-Shirt</button>
+            <button class="asset-btn" data-type="UGC Item">🧢 UGC Item</button>
+          </div>
+
+          <label class="label" for="prompt">Your prompt</label>
+          <textarea id="prompt" rows="7" placeholder="Example: black and red cyber hoodie with glowing skull logo"></textarea>
+
+          <div class="example-row">
+            <button data-prompt="black and red cyber hoodie with glowing skull logo">Cyber hoodie</button>
+            <button data-prompt="white angel wings UGC with gold halo and soft glow">Angel wings</button>
+            <button data-prompt="pink streetwear pants with stars, chains and clean stitching">Streetwear pants</button>
+          </div>
+
+          <button id="generateBtn" class="generate-btn">
+            <span>Generate Design</span>
+            <span>✦</span>
+          </button>
+        </div>
+
+        <div class="preview-card">
+          <div class="preview-header">
+            <div>
+              <p class="eyebrow">Live preview</p>
+              <h3 id="previewTitle">Your design will appear here</h3>
+            </div>
+            <span id="assetBadge" class="badge">Shirt</span>
+          </div>
+
+          <div id="previewBox" class="preview-box">
+            <div class="empty-state">
+              <div class="orb"></div>
+              <p>Enter a prompt and hit generate.</p>
+            </div>
+          </div>
+
+          <div class="download-row">
+            <button>Download PNG</button>
+            <button>Save Concept</button>
+            <button>Copy Prompt</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="templates" class="templates">
+      <div class="section-heading">
+        <p class="eyebrow">Templates</p>
+        <h2>Roblox clothing template shortcuts</h2>
+        <p>Quick buttons for users who want to start with the right Roblox asset shape.</p>
+      </div>
+
+      <div class="card-row">
+        <article>
+          <span>👕</span>
+          <h3>Classic Shirt</h3>
+          <p>Best for hoodies, jackets, football tops, uniforms, and full torso designs.</p>
+        </article>
+        <article>
+          <span>👖</span>
+          <h3>Classic Pants</h3>
+          <p>Use for cargos, joggers, jeans, chains, kneepads, and full leg designs.</p>
+        </article>
+        <article>
+          <span>🎨</span>
+          <h3>T-Shirt Graphic</h3>
+          <p>Perfect for logos, badges, simple chest graphics, and group merch.</p>
+        </article>
+        <article>
+          <span>🧢</span>
+          <h3>UGC Concept</h3>
+          <p>Generate ideas for hats, masks, wings, shoulder pets, headphones, and accessories.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="styles" class="styles">
+      <div class="section-heading">
+        <p class="eyebrow">Popular styles</p>
+        <h2>Click a vibe, then add your own twist</h2>
+      </div>
+
+      <div class="style-cloud">
+        <button>Dark RP</button>
+        <button>Cyber</button>
+        <button>Streetwear</button>
+        <button>Luxury</button>
+        <button>Anime</button>
+        <button>Y2K</button>
+        <button>Military</button>
+        <button>Racing</button>
+        <button>Galaxy</button>
+        <button>Skull</button>
+        <button>Angel</button>
+        <button>Fire</button>
+      </div>
+    </section>
+
+    <section class="how">
+      <div class="section-heading">
+        <p class="eyebrow">How it works</p>
+        <h2>Three steps. No waffle.</h2>
+      </div>
+
+      <div class="steps">
+        <div>
+          <span>01</span>
+          <h3>Pick an asset</h3>
+          <p>Choose shirt, pants, t-shirt, or UGC concept.</p>
+        </div>
+        <div>
+          <span>02</span>
+          <h3>Write a prompt</h3>
+          <p>Describe colours, theme, logo, and style.</p>
+        </div>
+        <div>
+          <span>03</span>
+          <h3>Generate</h3>
+          <p>Preview the idea and save the concept.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="faq">
+      <div class="section-heading">
+        <p class="eyebrow">FAQ</p>
+        <h2>Stuff people ask before pressing the big shiny button</h2>
+      </div>
+
+      <details>
+        <summary>Does this create real Roblox items?</summary>
+        <p>This version is a frontend demo. To create real AI images, connect it to an image generation API or backend.</p>
+      </details>
+      <details>
+        <summary>Can I use it for Roblox clothing?</summary>
+        <p>Yes, the layout is built for Roblox clothing and UGC concepts. Always check Roblox upload rules before publishing.</p>
+      </details>
+      <details>
+        <summary>Can I upload this online?</summary>
+        <p>Yes. You can host this static website on Netlify, Vercel, GitHub Pages, or any normal web hosting.</p>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 EzzCustoms. Built for Roblox creators.</p>
+    <p>This site is not affiliated with, endorsed by, or sponsored by Roblox Corporation.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
