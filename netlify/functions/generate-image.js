@@ -48,7 +48,8 @@ Requirements:
       body: JSON.stringify({
         model: "gpt-image-1",
         prompt: finalPrompt,
-        size: "512x512",
+        size: "1024x1024",
+quality: "low",
       }),
     });
 
