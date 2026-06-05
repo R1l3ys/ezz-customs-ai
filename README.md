@@ -1,13 +1,25 @@
-# EzzCustoms Clean Roblox Upload Template
+# EzzCustoms Structured Clothing Logic
 
-This version outputs a clean 585x559 Roblox classic clothing upload PNG.
+This version fixes the shirt/pants logic.
 
-Changes:
-- No UP/FRONT/BACK/L/R guide text in final output
-- No Roblox logo in final output
-- No coloured guide template in final output
-- Transparent background
-- Only the clothing texture is placed in the official panel positions
+Major changes:
+- Shirt and Pants no longer use AI texture chopping.
+- Shirt generates a structured hoodie layout:
+  - front zipper
+  - drawstrings
+  - pocket
+  - simple back panel
+  - sleeve accents
+  - cuffs and hem
+- Pants generates structured jeans:
+  - minimal torso/waistband only
+  - leg seams
+  - pockets
+  - ripped knee details
+  - optional chains/stars
+- Panels overfill by 3-5px to prevent white gaps.
+- Final output is a clean 585x559 transparent Roblox classic clothing upload PNG.
 
-Required Netlify env variable:
+OpenAI is still used for T-Shirt and UGC item generations only.
+Required Netlify env variable for AI features:
 OPENAI_API_KEY = your OpenAI API key
