@@ -4,10 +4,7 @@ exports.handler = async function (event) {
       return {
         statusCode: 200,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ok: true,
-          message: "generate-image function is deployed. Use the website Generate button to POST a prompt.",
-        }),
+        body: JSON.stringify({ ok: true, message: "generate-image function is deployed." }),
       };
     }
 
@@ -33,25 +30,22 @@ exports.handler = async function (event) {
       return {
         statusCode: 500,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          error: "Missing OPENAI_API_KEY in Netlify environment variables",
-        }),
+        body: JSON.stringify({ error: "Missing OPENAI_API_KEY in Netlify environment variables" }),
       };
     }
 
     const finalPrompt = `
-Create a seamless flat 2D clothing fabric texture for Roblox classic ${assetType || "clothing"}.
+Create a seamless flat 2D fabric/clothing texture for Roblox classic ${assetType || "clothing"}.
 
 User prompt: ${prompt}
 
-Important:
-- Output ONLY the fabric/design texture.
-- Do NOT draw a Roblox template.
-- Do NOT include template labels like FRONT, BACK, L, R, UP, DOWN.
-- Do NOT create a 3D render, mannequin, hoodie, jeans model, or floating clothing item.
-- Make a square texture/pattern that can be placed inside official Roblox clothing template panels.
-- No copyrighted logos or real brand names.
-- High contrast, clean Roblox clothing style, usable for shirt or pants panels.
+Rules:
+- Output only the clothing texture.
+- Do not draw the Roblox template.
+- Do not draw labels such as FRONT, BACK, UP, DOWN, L, R.
+- Do not create a 3D model, mannequin, jeans render, hoodie render, or floating item.
+- Make the texture suitable to be clipped into Roblox classic clothing template panels.
+- No copyrighted logos or real brands.
 `;
 
     const response = await fetch("https://api.openai.com/v1/images/generations", {
@@ -77,10 +71,7 @@ Important:
       return {
         statusCode: 502,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          error: "OpenAI returned a non-JSON response. Check your API key, billing, and function logs.",
-          preview: text.slice(0, 160),
-        }),
+        body: JSON.stringify({ error: "OpenAI returned a non-JSON response or timed out." }),
       };
     }
 
@@ -88,14 +79,11 @@ Important:
       return {
         statusCode: response.status,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          error: data.error?.message || "OpenAI image generation failed",
-        }),
+        body: JSON.stringify({ error: data.error?.message || "OpenAI image generation failed" }),
       };
     }
 
     const imageBase64 = data.data?.[0]?.b64_json;
-
     if (!imageBase64) {
       return {
         statusCode: 500,
@@ -107,9 +95,7 @@ Important:
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        image: `data:image/png;base64,${imageBase64}`,
-      }),
+      body: JSON.stringify({ image: `data:image/png;base64,${imageBase64}` }),
     };
   } catch (error) {
     return {

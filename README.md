@@ -1,8 +1,12 @@
-# EzzCustoms Official Roblox Template Layout
+# EzzCustoms Actual Roblox Template
 
-This version uses the uploaded Roblox Shirt Template and Pants Template images as base assets.
+This version uses the actual Roblox shirt and pants template PNGs provided by the user as the base image.
 
-Panel sizes used:
+Assets:
+- assets/roblox-shirt-template.png
+- assets/roblox-pants-template.png
+
+Panel sizes:
 - Large square: 128 x 128
 - Tall rectangle: 64 x 128
 - Wide rectangle: 128 x 64
@@ -10,13 +14,3 @@ Panel sizes used:
 
 Required Netlify env variable:
 OPENAI_API_KEY = your OpenAI API key
-
-Upload/replace these in GitHub:
-- index.html
-- styles.css
-- script.js
-- netlify.toml
-- README.md
-- assets/roblox-shirt-template.png
-- assets/roblox-pants-template.png
-- netlify/functions/generate-image.js
