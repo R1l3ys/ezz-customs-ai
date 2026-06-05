@@ -61,7 +61,7 @@ generateBtn.addEventListener("click", async () => {
     lastPrompt = prompt;
 
     if (selectedType === "Shirt" || selectedType === "Pants") {
-      lastGeneratedImage = await createActualTemplate(data.image, selectedType, prompt);
+      lastGeneratedImage = await createCleanRobloxUploadTemplate(data.image, selectedType, prompt);
       showTemplateResult(prompt);
     } else {
       lastGeneratedImage = data.image;
@@ -71,7 +71,7 @@ generateBtn.addEventListener("click", async () => {
   } catch (error) {
     if (selectedType === "Shirt" || selectedType === "Pants") {
       const fallback = createFallbackTexture(prompt, selectedType);
-      lastGeneratedImage = await createActualTemplate(fallback, selectedType, prompt);
+      lastGeneratedImage = await createCleanRobloxUploadTemplate(fallback, selectedType, prompt);
       showTemplateResult(prompt, error.message);
       return;
     }
@@ -82,11 +82,13 @@ generateBtn.addEventListener("click", async () => {
 });
 
 function showTemplateResult(prompt, warning = "") {
-  previewTitle.textContent = `${selectedType} actual Roblox template ready`;
+  previewTitle.textContent = `${selectedType} clean Roblox upload template ready`;
   previewBox.innerHTML = `
     <div class="generated-card template-card">
-      <img src="${lastGeneratedImage}" alt="Roblox clothing template" style="width:100%; max-width:585px; border-radius:8px; background:#ddd;" />
-      <p>${warning ? "Fallback used: " + escapeHTML(warning) + "<br>" : ""}Generated on the actual Roblox ${selectedType.toLowerCase()} template from: ${escapeHTML(prompt)}</p>
+      <div style="background: repeating-conic-gradient(#ddd 0% 25%, #fff 0% 50%) 50% / 24px 24px; border-radius:10px; padding:10px;">
+        <img src="${lastGeneratedImage}" alt="Clean Roblox clothing upload template" style="width:100%; max-width:585px; image-rendering:auto;" />
+      </div>
+      <p>${warning ? "Fallback used: " + escapeHTML(warning) + "<br>" : ""}Clean Roblox ${selectedType.toLowerCase()} upload PNG generated from: ${escapeHTML(prompt)}</p>
     </div>
   `;
 }
@@ -98,7 +100,7 @@ document.querySelectorAll(".download-row button")[0]?.addEventListener("click", 
   }
   const link = document.createElement("a");
   link.href = lastGeneratedImage;
-  link.download = selectedType === "Pants" ? "roblox-pants-actual-template.png" : "roblox-shirt-actual-template.png";
+  link.download = selectedType === "Pants" ? "roblox-pants-clean-upload.png" : "roblox-shirt-clean-upload.png";
   link.click();
 });
 
@@ -111,27 +113,21 @@ document.querySelectorAll(".download-row button")[2]?.addEventListener("click", 
   alert("Prompt copied.");
 });
 
-async function createActualTemplate(textureSrc, type, prompt) {
+async function createCleanRobloxUploadTemplate(textureSrc, type, prompt) {
   const canvas = document.createElement("canvas");
   canvas.width = 585;
   canvas.height = 559;
   const ctx = canvas.getContext("2d");
 
-  const base = await loadImage(type === "Pants" ? "/assets/roblox-pants-template.png" : "/assets/roblox-shirt-template.png");
+  // IMPORTANT: transparent background. No Roblox guide labels, no arrows, no logo, no coloured base.
+  ctx.clearRect(0, 0, 585, 559);
+
   const texture = await loadImage(textureSrc);
-
-  // Actual Roblox template image first.
-  ctx.drawImage(base, 0, 0, 585, 559);
-
   const panels = getOfficialPanels();
 
-  // Design goes into the official coloured panel rectangles.
   panels.forEach((panel, i) => {
     fillPanel(ctx, texture, panel, i, prompt, type);
   });
-
-  // Reapply red guide borders and labels so template still looks like the actual Roblox guide.
-  drawPanelGuides(ctx, panels);
 
   return canvas.toDataURL("image/png");
 }
@@ -181,16 +177,17 @@ function fillPanel(ctx, texture, p, i, prompt, type) {
 
   ctx.drawImage(texture, sx, sy, crop, crop, p.x, p.y, p.w, p.h);
 
-  // Shading and seams
+  // Soft seam/shading, no text labels.
   const grad = ctx.createLinearGradient(p.x, p.y, p.x + p.w, p.y + p.h);
-  grad.addColorStop(0, "rgba(255,255,255,0.16)");
-  grad.addColorStop(1, "rgba(0,0,0,0.20)");
+  grad.addColorStop(0, "rgba(255,255,255,0.12)");
+  grad.addColorStop(1, "rgba(0,0,0,0.18)");
   ctx.fillStyle = grad;
   ctx.fillRect(p.x, p.y, p.w, p.h);
 
   const lower = prompt.toLowerCase();
+
   if (type === "Pants" && (lower.includes("ripped") || lower.includes("emo"))) {
-    ctx.strokeStyle = "rgba(255,255,255,0.75)";
+    ctx.strokeStyle = "rgba(255,255,255,0.72)";
     ctx.lineWidth = 2;
     for (let n = 0; n < 3; n++) {
       const y = p.y + 28 + n * 30;
@@ -209,34 +206,6 @@ function fillPanel(ctx, texture, p, i, prompt, type) {
     ctx.fillText("☠", p.x + p.w / 2, p.y + p.h / 2);
   }
 
-  ctx.restore();
-}
-
-function drawPanelGuides(ctx, panels) {
-  ctx.save();
-  ctx.strokeStyle = "rgba(255,0,0,0.85)";
-  ctx.lineWidth = 1;
-  panels.forEach(p => ctx.strokeRect(p.x, p.y, p.w, p.h));
-
-  ctx.setLineDash([4, 3]);
-  ctx.strokeStyle = "rgba(255,255,255,0.65)";
-  panels.filter(p => p.h === 128).forEach(p => {
-    ctx.beginPath();
-    ctx.moveTo(p.x, p.y + 64);
-    ctx.lineTo(p.x + p.w, p.y + 64);
-    ctx.stroke();
-  });
-  ctx.setLineDash([]);
-
-  ctx.font = "bold 18px Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  panels.forEach(p => {
-    ctx.fillStyle = "rgba(0,0,0,0.35)";
-    ctx.fillRect(p.x + 2, p.y + 2, Math.min(p.w - 4, 76), 24);
-    ctx.fillStyle = "rgba(255,255,255,0.95)";
-    ctx.fillText(p.label, p.x + Math.min(p.w / 2, 40), p.y + 15);
-  });
   ctx.restore();
 }
 
@@ -281,6 +250,7 @@ function createFallbackTexture(prompt, type) {
   }
 
   if (lower.includes("star")) {
+    ctx.font = "bold 56px Arial";
     ctx.fillStyle = accent;
     for (let i = 0; i < 30; i++) {
       ctx.fillText("★", (i * 151) % 980 + 20, (i * 227) % 980 + 30);

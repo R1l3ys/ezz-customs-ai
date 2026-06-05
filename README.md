@@ -1,16 +1,13 @@
-# EzzCustoms Actual Roblox Template
+# EzzCustoms Clean Roblox Upload Template
 
-This version uses the actual Roblox shirt and pants template PNGs provided by the user as the base image.
+This version outputs a clean 585x559 Roblox classic clothing upload PNG.
 
-Assets:
-- assets/roblox-shirt-template.png
-- assets/roblox-pants-template.png
-
-Panel sizes:
-- Large square: 128 x 128
-- Tall rectangle: 64 x 128
-- Wide rectangle: 128 x 64
-- Small square: 64 x 64
+Changes:
+- No UP/FRONT/BACK/L/R guide text in final output
+- No Roblox logo in final output
+- No coloured guide template in final output
+- Transparent background
+- Only the clothing texture is placed in the official panel positions
 
 Required Netlify env variable:
 OPENAI_API_KEY = your OpenAI API key
