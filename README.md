@@ -18,3 +18,11 @@ stripes, checkerboard, plaid, camo, galaxy, floral, butterfly, animal print, leo
 y2k, emo, grunge, goth, punk, skater, cyber, neon, streetwear, luxury, minimal, oversized, cute, coquette, soft girl, egirl, fairycore, baddie, preppy, vintage, retro, kawaii, sporty, racing, techwear, tactical, formal and royal.
 
 Upload these files to GitHub, commit, and Netlify redeploys.
+
+
+## V5 fixes
+- Much brighter colour bases
+- Less muddy black shading
+- Cleaner bikinis / tanks / crop tops
+- Better shirt and pants balance
+- Pants torso now acts more like waistband area instead of full dark block

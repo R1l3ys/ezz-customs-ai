@@ -2002,3 +2002,329 @@ function setupV4PromptButtons() {
 }
 
 setupV4PromptButtons();
+
+
+/* =======================================
+   EZZAI V5 COLOR + DESIGN FIX
+   Fixes dark black base issue and makes
+   colors/designs much cleaner and brighter.
+======================================= */
+
+const EZZ_LIGHT_COLOR_WORDS = [
+  "white","cream","beige","tan","peach","pink","lavender","yellow","mint","sky","cyan","silver"
+];
+
+function getSmartPalette(p) {
+  const palettes = {
+    black:   { base:"#16181d", secondary:"#0d1015", accent:"#e5e7eb", highlight:"#ffffff", alt:"#6b7280" },
+    grey:    { base:"#6b7280", secondary:"#4b5563", accent:"#e5e7eb", highlight:"#ffffff", alt:"#9ca3af" },
+    gray:    { base:"#6b7280", secondary:"#4b5563", accent:"#e5e7eb", highlight:"#ffffff", alt:"#9ca3af" },
+    white:   { base:"#f3f4f6", secondary:"#e5e7eb", accent:"#9ca3af", highlight:"#ffffff", alt:"#d1d5db" },
+    red:     { base:"#dc2626", secondary:"#991b1b", accent:"#fee2e2", highlight:"#ffffff", alt:"#f87171" },
+    crimson: { base:"#be123c", secondary:"#881337", accent:"#ffe4e6", highlight:"#ffffff", alt:"#fb7185" },
+    burgundy:{ base:"#7f1d1d", secondary:"#4c0519", accent:"#fecdd3", highlight:"#ffffff", alt:"#9f1239" },
+    maroon:  { base:"#7f1d1d", secondary:"#450a0a", accent:"#fecaca", highlight:"#ffffff", alt:"#b91c1c" },
+    blue:    { base:"#2563eb", secondary:"#1d4ed8", accent:"#dbeafe", highlight:"#ffffff", alt:"#60a5fa" },
+    navy:    { base:"#1e3a8a", secondary:"#172554", accent:"#dbeafe", highlight:"#ffffff", alt:"#60a5fa" },
+    sky:     { base:"#38bdf8", secondary:"#0284c7", accent:"#e0f2fe", highlight:"#ffffff", alt:"#7dd3fc" },
+    cyan:    { base:"#22d3ee", secondary:"#0891b2", accent:"#cffafe", highlight:"#ffffff", alt:"#67e8f9" },
+    teal:    { base:"#14b8a6", secondary:"#0f766e", accent:"#ccfbf1", highlight:"#ffffff", alt:"#5eead4" },
+    green:   { base:"#22c55e", secondary:"#15803d", accent:"#dcfce7", highlight:"#ffffff", alt:"#86efac" },
+    lime:    { base:"#84cc16", secondary:"#4d7c0f", accent:"#ecfccb", highlight:"#ffffff", alt:"#bef264" },
+    olive:   { base:"#6b7d24", secondary:"#4d5c19", accent:"#fef9c3", highlight:"#ffffff", alt:"#a3b18a" },
+    mint:    { base:"#6ee7b7", secondary:"#34d399", accent:"#ecfdf5", highlight:"#ffffff", alt:"#a7f3d0" },
+    purple:  { base:"#8b5cf6", secondary:"#6d28d9", accent:"#ede9fe", highlight:"#ffffff", alt:"#c4b5fd" },
+    violet:  { base:"#8b5cf6", secondary:"#5b21b6", accent:"#f5f3ff", highlight:"#ffffff", alt:"#c4b5fd" },
+    lavender:{ base:"#c4b5fd", secondary:"#a78bfa", accent:"#faf5ff", highlight:"#ffffff", alt:"#ddd6fe" },
+    pink:    { base:"#f472b6", secondary:"#ec4899", accent:"#fdf2f8", highlight:"#ffffff", alt:"#f9a8d4" },
+    hotpink: { base:"#ec4899", secondary:"#be185d", accent:"#fdf2f8", highlight:"#ffffff", alt:"#f9a8d4" },
+    rose:    { base:"#fb7185", secondary:"#e11d48", accent:"#fff1f2", highlight:"#ffffff", alt:"#fda4af" },
+    orange:  { base:"#f97316", secondary:"#ea580c", accent:"#ffedd5", highlight:"#ffffff", alt:"#fdba74" },
+    peach:   { base:"#fdba74", secondary:"#fb923c", accent:"#fff7ed", highlight:"#ffffff", alt:"#fed7aa" },
+    yellow:  { base:"#facc15", secondary:"#eab308", accent:"#fefce8", highlight:"#ffffff", alt:"#fde68a" },
+    gold:    { base:"#f59e0b", secondary:"#d97706", accent:"#fffbeb", highlight:"#ffffff", alt:"#fcd34d" },
+    brown:   { base:"#92400e", secondary:"#78350f", accent:"#fef3c7", highlight:"#ffffff", alt:"#d6b27c" },
+    tan:     { base:"#d6b27c", secondary:"#b08968", accent:"#fffbeb", highlight:"#ffffff", alt:"#e7c9a9" },
+    beige:   { base:"#e8d8c3", secondary:"#d6c4a0", accent:"#fffbeb", highlight:"#ffffff", alt:"#f3e6d3" },
+    cream:   { base:"#f5ead0", secondary:"#e8dcc2", accent:"#fffbeb", highlight:"#ffffff", alt:"#faf2df" },
+    silver:  { base:"#d1d5db", secondary:"#9ca3af", accent:"#f8fafc", highlight:"#ffffff", alt:"#e5e7eb" },
+    chrome:  { base:"#cbd5e1", secondary:"#94a3b8", accent:"#f8fafc", highlight:"#ffffff", alt:"#e2e8f0" },
+    rainbow: { base:"#f472b6", secondary:"#60a5fa", accent:"#facc15", highlight:"#ffffff", alt:"#34d399" }
+  };
+
+  const found = Object.keys(palettes).filter(c => p.includes(c));
+  if (p.includes("black and white") || p.includes("black & white")) {
+    return { ...palettes.black, accent: palettes.white.base, highlight: "#ffffff", alt: palettes.white.secondary, name: "black-white" };
+  }
+  if (found.length >= 2) {
+    const a = palettes[found[0]];
+    const b = palettes[found[1]];
+    return { base:a.base, secondary:a.secondary, accent:b.base, highlight:b.accent || b.highlight, alt:a.alt, name:found[0] + '-' + found[1] };
+  }
+  if (found.length === 1) return { ...palettes[found[0]], name:found[0] };
+  return { base:"#8b5cf6", secondary:"#6d28d9", accent:"#f472b6", highlight:"#ffffff", alt:"#c4b5fd", name:"default-vibrant" };
+}
+
+function isLightPalette(brain) {
+  const raw = (brain?.raw || "").toLowerCase();
+  return EZZ_LIGHT_COLOR_WORDS.some(w => raw.includes(w)) || raw.includes('pastel') || raw.includes('cute') || raw.includes('coquette');
+}
+
+function applyFabric(ctx, p, brain, index) {
+  const light = isLightPalette(brain);
+  withClip(ctx, p, () => {
+    ctx.strokeStyle = light ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.045)";
+    ctx.lineWidth = 1;
+    for (let y = p.y - 4; y < p.y + p.h + 4; y += 9) {
+      ctx.beginPath();
+      ctx.moveTo(p.x - 5, y);
+      ctx.lineTo(p.x + p.w + 5, y + Math.sin((y + index) * 0.16) * 1.0);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = light ? "rgba(0,0,0,0.04)" : "rgba(0,0,0,0.10)";
+    for (let x = p.x - 4; x < p.x + p.w + 4; x += 14) {
+      ctx.beginPath();
+      ctx.moveTo(x, p.y - 4);
+      ctx.lineTo(x + Math.cos(x) * 1.0, p.y + p.h + 4);
+      ctx.stroke();
+    }
+  });
+}
+
+function applyDenim(ctx, p, brain, index) {
+  const light = isLightPalette(brain);
+  withClip(ctx, p, () => {
+    ctx.strokeStyle = light ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.055)";
+    ctx.lineWidth = 1;
+    for (let y = p.y - 4; y < p.y + p.h + 4; y += 6) {
+      ctx.beginPath();
+      ctx.moveTo(p.x - 4, y);
+      ctx.lineTo(p.x + p.w + 4, y + Math.sin((y + index) * 0.2) * 1.0);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = light ? "rgba(0,0,0,0.06)" : "rgba(0,0,0,0.12)";
+    for (let x = p.x - 4; x < p.x + p.w + 4; x += 9) {
+      ctx.beginPath();
+      ctx.moveTo(x, p.y - 4);
+      ctx.lineTo(x + Math.sin(x) * 1.0, p.y + p.h + 4);
+      ctx.stroke();
+    }
+  });
+}
+
+function applyShade(ctx, p, intensity = 0.15) {
+  const lightMode = intensity < 0.12;
+  withClip(ctx, p, () => {
+    const grad = ctx.createLinearGradient(p.x, p.y, p.x + p.w, p.y + p.h);
+    grad.addColorStop(0, `rgba(255,255,255,${lightMode ? 0.07 : intensity})`);
+    grad.addColorStop(0.5, "rgba(255,255,255,0.012)");
+    grad.addColorStop(1, `rgba(0,0,0,${lightMode ? 0.08 : intensity * 0.75})`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(p.x - 2, p.y - 2, p.w + 4, p.h + 4);
+  });
+}
+
+function renderBasePanelSet(ctx, panels, brain, denim = false) {
+  const light = isLightPalette(brain);
+  panels.forEach((panel, i) => {
+    fillPanel(ctx, panel, brain.palette.base, 5);
+    if (denim) applyDenim(ctx, panel, brain, i); else applyFabric(ctx, panel, brain, i);
+    applyGlobalPattern(ctx, panel, brain, i);
+    applyShade(ctx, panel, light ? 0.08 : 0.13);
+  });
+}
+
+function drawBetterColorBlocking(ctx, panel, brain, mode = 'sides') {
+  const c = brain.palette;
+  withClip(ctx, panel, () => {
+    if (mode === 'sides') {
+      ctx.fillStyle = rgba(c.accent, 0.28);
+      ctx.fillRect(panel.x + 6, panel.y + 6, Math.max(12, panel.w * 0.18), panel.h - 12);
+      ctx.fillRect(panel.x + panel.w - Math.max(18, panel.w * 0.18) - 6, panel.y + 6, Math.max(12, panel.w * 0.18), panel.h - 12);
+    } else if (mode === 'stripe') {
+      ctx.fillStyle = rgba(c.accent, 0.24);
+      ctx.fillRect(panel.x + 8, panel.y + panel.h * 0.18, panel.w - 16, Math.max(10, panel.h * 0.12));
+    }
+  });
+}
+
+const __oldCreateSmartShirtV5 = createSmartShirt;
+createSmartShirt = function(prompt) {
+  const brain = parsePrompt(prompt);
+  const { canvas, ctx } = createCanvas();
+  const p = getPanels();
+  renderBasePanelSet(ctx, Object.values(p), brain, false);
+
+  const variant = typeof getTopVariant === 'function' ? getTopVariant(brain) : (brain.style.hoodie ? 'hoodie' : 'shirt');
+  const isHoodie = ['hoodie','jacket','sweater'].includes(variant) || (brain.style.hoodie && !brain.style.shirt);
+
+  if (variant === 'bikini' || variant === 'tank' || variant === 'crop' || variant === 'babytee') {
+    // keep bright top panels and clear lower torso area more cleanly
+    [p.torsoDown].forEach(panel => clearPanel(ctx, panel));
+  }
+
+  if (typeof drawHoodie === 'function' && isHoodie && variant === 'hoodie') {
+    drawHoodie(ctx, p, brain);
+  } else if (typeof drawJacket === 'function' && variant === 'jacket') {
+    drawJacket(ctx, p, brain);
+  } else if (typeof drawPlainShirt === 'function' && ['shirt','tee','tank','crop','babytee','bikini','blouse','polo','corset','dress','jersey','uniform','suit','overalls'].includes(variant)) {
+    drawPlainShirt(ctx, p, brain);
+  } else {
+    __oldCreateSmartShirtV5(prompt);
+  }
+
+  // cleaner / brighter variant tweaks
+  if (variant === 'bikini' || variant === 'tank' || variant === 'crop' || variant === 'babytee') {
+    drawV5FeminineTop(ctx, p, brain, variant);
+  }
+  if (variant === 'shirt' || variant === 'tee' || variant === 'polo' || variant === 'jersey') {
+    drawV5TopDetails(ctx, p, brain, variant);
+  }
+  if (variant === 'hoodie') {
+    drawV5HoodieDetails(ctx, p, brain);
+  }
+  if (variant === 'jacket') {
+    drawV5JacketDetails(ctx, p, brain);
+  }
+
+  if (typeof drawSleeves === 'function') drawSleeves(ctx, p, brain, isHoodie, variant);
+  if (typeof drawShirtExtras === 'function') drawShirtExtras(ctx, p, brain, variant);
+  return canvas.toDataURL('image/png');
+};
+
+function drawV5TopDetails(ctx, p, brain, variant) {
+  const c = brain.palette;
+  withClip(ctx, p.torsoFront, () => {
+    if (brain.style.stripes) {
+      for (let y = p.torsoFront.y + 18; y < p.torsoFront.y + 112; y += 16) {
+        ctx.fillStyle = rgba(c.accent, 0.18);
+        ctx.fillRect(p.torsoFront.x + 8, y, p.torsoFront.w - 16, 8);
+      }
+    }
+    if (brain.style.checker) {
+      const size = 16;
+      for (let yy = p.torsoFront.y + 22; yy < p.torsoFront.y + 110; yy += size) {
+        for (let xx = p.torsoFront.x + 12; xx < p.torsoFront.x + 116; xx += size) {
+          if (((xx+yy)/size)%2===0) { ctx.fillStyle = rgba(c.accent,0.16); ctx.fillRect(xx, yy, size, size); }
+        }
+      }
+    }
+    if (variant === 'jersey') {
+      ctx.fillStyle = rgba(c.accent,0.22);
+      ctx.fillRect(p.torsoFront.x+8, p.torsoFront.y+22, p.torsoFront.w-16, 18);
+      ctx.fillStyle = rgba(c.highlight,0.9);
+      ctx.font = 'bold 42px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('07', p.torsoFront.x+64, p.torsoFront.y+92);
+    }
+    if (variant === 'polo') {
+      drawBetterColorBlocking(ctx, p.torsoFront, brain, 'stripe');
+    }
+  });
+}
+
+function drawV5HoodieDetails(ctx, p, brain) {
+  const c = brain.palette;
+  withClip(ctx, p.torsoFront, () => {
+    if (brain.style.y2k || brain.style.cyber || brain.style.graffiti) drawBetterColorBlocking(ctx, p.torsoFront, brain, 'sides');
+    ctx.fillStyle = rgba(c.highlight, 0.08);
+    ctx.fillRect(p.torsoFront.x + 22, p.torsoFront.y + 84, 84, 26);
+  });
+}
+
+function drawV5JacketDetails(ctx, p, brain) {
+  const c = brain.palette;
+  withClip(ctx, p.torsoFront, () => {
+    drawBetterColorBlocking(ctx, p.torsoFront, brain, 'sides');
+    ctx.strokeStyle = rgba(c.highlight, 0.30);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(p.torsoFront.x + 64, p.torsoFront.y + 8);
+    ctx.lineTo(p.torsoFront.x + 64, p.torsoFront.y + 120);
+    ctx.stroke();
+  });
+}
+
+function drawV5FeminineTop(ctx, p, brain, variant) {
+  const c = brain.palette;
+  // clear lower torso/sleeve noise for cleaner tops
+  [p.torsoDown, p.rightD, p.leftD].forEach(panel => clearPanel(ctx, panel));
+  withClip(ctx, p.torsoFront, () => {
+    // neckline
+    ctx.clearRect(p.torsoFront.x + 38, p.torsoFront.y + 0, 52, 14);
+    if (variant === 'bikini') {
+      ctx.fillStyle = rgba(c.accent, 0.78);
+      ctx.beginPath(); ctx.moveTo(p.torsoFront.x + 18, p.torsoFront.y + 28); ctx.lineTo(p.torsoFront.x + 56, p.torsoFront.y + 28); ctx.lineTo(p.torsoFront.x + 36, p.torsoFront.y + 64); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(p.torsoFront.x + 110, p.torsoFront.y + 28); ctx.lineTo(p.torsoFront.x + 72, p.torsoFront.y + 28); ctx.lineTo(p.torsoFront.x + 92, p.torsoFront.y + 64); ctx.closePath(); ctx.fill();
+      line(ctx, p.torsoFront.x + 56, p.torsoFront.y + 26, p.torsoFront.x + 72, p.torsoFront.y + 26, rgba(c.highlight,0.9), 3);
+      line(ctx, p.torsoFront.x + 38, p.torsoFront.y + 62, p.torsoFront.x + 18, p.torsoFront.y + 100, rgba(c.highlight,0.35), 2);
+      line(ctx, p.torsoFront.x + 90, p.torsoFront.y + 62, p.torsoFront.x + 110, p.torsoFront.y + 100, rgba(c.highlight,0.35), 2);
+    } else if (variant === 'tank') {
+      ctx.clearRect(p.torsoFront.x + 4, p.torsoFront.y + 12, 18, 42);
+      ctx.clearRect(p.torsoFront.x + 106, p.torsoFront.y + 12, 18, 42);
+      line(ctx, p.torsoFront.x + 34, p.torsoFront.y + 18, p.torsoFront.x + 52, p.torsoFront.y + 8, rgba(c.highlight,0.45), 3);
+      line(ctx, p.torsoFront.x + 94, p.torsoFront.y + 18, p.torsoFront.x + 76, p.torsoFront.y + 8, rgba(c.highlight,0.45), 3);
+    } else if (variant === 'crop' || variant === 'babytee') {
+      ctx.clearRect(p.torsoFront.x, p.torsoFront.y + 96, p.torsoFront.w, 32);
+      ctx.fillStyle = rgba(c.accent, 0.18);
+      ctx.fillRect(p.torsoFront.x + 12, p.torsoFront.y + 80, p.torsoFront.w - 24, 10);
+    }
+    if (brain.style.bows || brain.style.coquette || brain.raw.includes('bow')) {
+      if (typeof drawBow === 'function') drawBow(ctx, p.torsoFront.x + 64, p.torsoFront.y + 36, c.highlight, c.accent);
+    }
+  });
+}
+
+const __oldCreateSmartPantsV5 = createSmartPants;
+createSmartPants = function(prompt) {
+  const brain = parsePrompt(prompt);
+  const { canvas, ctx } = createCanvas();
+  const p = getPanels();
+  const all = Object.values(p);
+  const light = isLightPalette(brain);
+
+  all.forEach(panel => clearPanel(ctx, panel));
+
+  // Fill pants template areas only: torso + legs for classic pants, but torso should be waistband/top continuation only
+  const torsoPanels = [p.torsoFront, p.torsoBack, p.torsoLeft, p.torsoRight, p.torsoUp, p.torsoDown];
+  const legPanels = [p.rightL,p.rightB,p.rightR,p.rightF,p.rightU,p.rightD,p.leftL,p.leftB,p.leftR,p.leftF,p.leftU,p.leftD];
+  renderBasePanelSet(ctx, torsoPanels, brain, brain.style.jeans || brain.raw.includes('denim'));
+  renderBasePanelSet(ctx, legPanels, brain, brain.style.jeans || brain.raw.includes('denim'));
+
+  // keep torso subtle on pants so it acts like waistband/upper section only
+  [p.torsoFront,p.torsoBack,p.torsoLeft,p.torsoRight].forEach(panel => {
+    withClip(ctx, panel, () => {
+      ctx.clearRect(panel.x, panel.y + 42, panel.w, panel.h - 42);
+      ctx.fillStyle = rgba(brain.palette.secondary, 0.22);
+      ctx.fillRect(panel.x, panel.y + 8, panel.w, 26);
+      line(ctx, panel.x + 8, panel.y + 34, panel.x + panel.w - 8, panel.y + 34, rgba(brain.palette.highlight,0.18), 2);
+    });
+  });
+
+  if (brain.style.ripped || brain.raw.includes('ripped') || brain.raw.includes('distressed')) {
+    if (typeof addRips === 'function') {
+      [p.rightF,p.leftF,p.rightB,p.leftB].forEach((panel, i) => addRips(ctx, panel, i));
+    }
+  }
+  if (brain.style.cargo || brain.raw.includes('cargo')) {
+    if (typeof drawCargoPocket === 'function') {
+      drawCargoPocket(ctx, p.rightF, brain.palette, true);
+      drawCargoPocket(ctx, p.leftF, brain.palette, true);
+    }
+  }
+  if (brain.style.chains || brain.raw.includes('chain')) {
+    if (typeof drawChain === 'function') {
+      drawChain(ctx, p.rightF.x + 16, p.rightF.y + 28, 24, brain.palette.highlight);
+      drawChain(ctx, p.leftF.x + 48, p.leftF.y + 24, 22, brain.palette.highlight);
+    }
+  }
+  if (brain.style.stars || brain.raw.includes('star')) {
+    [p.rightF,p.leftF].forEach((panel, i) => {
+      for (let n=0;n<4;n++) if (typeof drawStar === 'function') drawStar(ctx, panel.x + 18 + n*10, panel.y + 18 + ((n+i)%3)*22, 5, brain.palette.accent, 0.8);
+    });
+  }
+
+  // cleaner finishing shade
+  [...torsoPanels, ...legPanels].forEach(panel => applyShade(ctx, panel, light ? 0.06 : 0.10));
+  return canvas.toDataURL('image/png');
+};
