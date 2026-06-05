@@ -48,6 +48,7 @@ generateBtn.addEventListener("click", async () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Accept": "application/json",
       },
       body: JSON.stringify({
         prompt,
@@ -55,7 +56,14 @@ generateBtn.addEventListener("click", async () => {
       }),
     });
 
-    const data = await response.json();
+    const text = await response.text();
+    let data;
+
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error("Netlify returned an HTML page instead of the function. Redeploy the folder that contains index.html, styles.css, script.js, netlify, and netlify.toml.");
+    }
 
     if (!response.ok) {
       throw new Error(data.error || "Image generation failed. Check your API key and billing.");

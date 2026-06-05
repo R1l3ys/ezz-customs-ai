@@ -1,21 +1,13 @@
-# EzzCustoms AI Website
+# EzzCustoms Roblox Template Mode
 
-This version includes a Netlify Function that connects the frontend to OpenAI image generation.
+This version pushes the AI to generate flat Roblox classic clothing template layouts instead of 3D fashion renders.
 
-## Before deploying
+## Required Netlify environment variable
+OPENAI_API_KEY = your OpenAI API key
 
-In Netlify, add this environment variable:
-
-OPENAI_API_KEY = your OpenAI secret key
-
-## Deploy
-
-Drag this whole folder into the Netlify deploy box.
-
-## Files
-
+## Files needed at repo top level
 - index.html
 - styles.css
 - script.js
-- netlify/functions/generate-image.js
 - netlify.toml
+- netlify/functions/generate-image.js
