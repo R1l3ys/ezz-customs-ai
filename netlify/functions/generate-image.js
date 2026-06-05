@@ -39,52 +39,18 @@ exports.handler = async function (event) {
       };
     }
 
-    let templateInstructions = "";
-
-    if (assetType === "Shirt") {
-      templateInstructions = `
-Create a FLAT 2D Roblox CLASSIC SHIRT TEMPLATE texture sheet.
-It must look like a Roblox clothing upload template, not a 3D hoodie or mannequin.
-Show the design laid out as separate UV clothing panels: torso front, torso back, left arm, right arm, top, bottom.
-Use a clean square 1024x1024 image.
-No human body, no mannequin, no 3D render, no floating clothing item.
-Make it look like a usable Roblox classic shirt texture concept.
-`;
-    } else if (assetType === "Pants") {
-      templateInstructions = `
-Create a FLAT 2D Roblox CLASSIC PANTS TEMPLATE texture sheet.
-It must look like a Roblox clothing upload template, not a 3D pants render.
-Show the design laid out as separate UV clothing panels: left leg front, right leg front, left leg back, right leg back, side panels, waist/top areas.
-Use a clean square 1024x1024 image.
-No human body, no mannequin, no 3D render, no floating clothing item.
-Make it look like a usable Roblox classic pants texture concept.
-`;
-    } else if (assetType === "T-Shirt") {
-      templateInstructions = `
-Create a flat Roblox T-shirt graphic design.
-Centered chest graphic on a plain background.
-No 3D mannequin, no full clothing model.
-Make it suitable as a Roblox t-shirt decal concept.
-`;
-    } else {
-      templateInstructions = `
-Create a Roblox UGC concept sheet.
-Show a clean front-facing item concept with simple marketplace-style presentation.
-No copyrighted logos or real brand names.
-`;
-    }
-
     const finalPrompt = `
-${templateInstructions}
+Create a flat 2D clothing texture/pattern for Roblox classic ${assetType || "clothing"}.
 
-User design prompt: ${prompt}
+User prompt: ${prompt}
 
-Extra rules:
-- Do not add random text labels unless necessary.
-- Do not use copyrighted logos.
-- Do not use real brand names.
-- Keep the design clean, centered, and easy to understand.
-- Prioritize Roblox classic clothing template layout over realistic fashion rendering.
+Important:
+- Do NOT create a full Roblox template layout.
+- Do NOT draw labels, panel names, or guide boxes.
+- Do NOT create a 3D render, mannequin, pants model, hoodie model, or floating item.
+- Create only the fabric/design texture that will be placed onto an official Roblox classic clothing template by code.
+- Square image, clean texture, high contrast, suitable for Roblox clothing.
+- No copyrighted logos or real brand names.
 `;
 
     const response = await fetch("https://api.openai.com/v1/images/generations", {
