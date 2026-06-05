@@ -1,28 +1,24 @@
-# EzzCustoms V4 Mega Library
+# EzzCustoms V6 No-Base Clean Designs
 
-This version adds a huge prompt library for colours, patterns, styles and clothing items.
+This version fixes the ugly dark-base problem.
 
-## Colour library
-Supports many colour words including black, grey, white, red, crimson, burgundy, maroon, blue, navy, sky, cyan, teal, green, lime, olive, mint, purple, violet, lavender, pink, hotpink, rose, orange, peach, yellow, gold, brown, tan, beige, cream, silver, chrome and rainbow.
+## What changed
+- Unused panels stay transparent.
+- Bikini no longer fills arms/legs with a random dark base.
+- Tank tops, crop tops and baby tees use only the panels they need.
+- Colours are brighter and less muddy.
+- Designs have cleaner shapes.
+- Added a Random Variation button.
+- Pants still use full pants panels because Roblox classic pants need leg panels, but the torso area is kept mostly waistband only.
 
-## Top library
-hoodie, jacket, shirt, tee, long sleeve, sweater, cardigan, tank top, crop top, baby tee, blouse, polo, bikini, corset, dress, jersey, school uniform, tactical vest, suit, robe, kimono, cloak, cape, poncho, overalls.
+## Good prompts
+- pink bikini top with bows
+- white tank top with hearts
+- black cropped y2k top with stars
+- purple hoodie with lightning
+- blue jersey with number 7
+- red plaid skirt
+- black ripped jeans with chains
+- cream coquette blouse with bows
 
-## Bottom library
-jeans, denim, cargos, joggers, tracksuit pants, shorts, jorts, skirt, mini skirt, pleated skirt, leggings, trousers, chinos, slacks, overalls, formal pants, swim shorts.
-
-## Pattern/design library
-stripes, checkerboard, plaid, camo, galaxy, floral, butterfly, animal print, leopard, zebra, snake, cow print, money, graffiti, spider web, blood, flames, lightning, stars, hearts, skulls, crosses, chains, bows, lace, pearls, diamonds, chrome.
-
-## Styles
-y2k, emo, grunge, goth, punk, skater, cyber, neon, streetwear, luxury, minimal, oversized, cute, coquette, soft girl, egirl, fairycore, baddie, preppy, vintage, retro, kawaii, sporty, racing, techwear, tactical, formal and royal.
-
-Upload these files to GitHub, commit, and Netlify redeploys.
-
-
-## V5 fixes
-- Much brighter colour bases
-- Less muddy black shading
-- Cleaner bikinis / tanks / crop tops
-- Better shirt and pants balance
-- Pants torso now acts more like waistband area instead of full dark block
+Upload these files to GitHub, commit, then Netlify redeploys.

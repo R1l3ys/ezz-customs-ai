@@ -2328,3 +2328,521 @@ createSmartPants = function(prompt) {
   [...torsoPanels, ...legPanels].forEach(panel => applyShade(ctx, panel, light ? 0.06 : 0.10));
   return canvas.toDataURL('image/png');
 };
+
+/* =======================================
+   EZZAI V6 NO-BASE CLEAN DESIGN ENGINE
+   Transparent unused panels + cleaner,
+   garment-specific designs + variations.
+======================================= */
+
+let EZZ_V6_COUNTER = 0;
+
+function ezzV6Has(raw, ...terms) {
+  return terms.some(t => raw.includes(t));
+}
+
+function ezzV6Kind(prompt, selectedTypeValue) {
+  const raw = String(prompt || "").toLowerCase();
+  if (selectedTypeValue === "Pants") {
+    if (ezzV6Has(raw, "skirt", "mini skirt", "pleated")) return "skirt";
+    if (ezzV6Has(raw, "shorts", "jorts")) return "shorts";
+    if (ezzV6Has(raw, "leggings", "tights", "yoga")) return "leggings";
+    return "pants";
+  }
+
+  if (ezzV6Has(raw, "bikini", "swimwear", "swimsuit", "bra top")) return "bikini";
+  if (ezzV6Has(raw, "corset", "lace up", "bodice")) return "corset";
+  if (ezzV6Has(raw, "tank", "tank top", "sleeveless", "cami", "halter")) return "tank";
+  if (ezzV6Has(raw, "crop", "cropped", "crop top")) return "crop";
+  if (ezzV6Has(raw, "baby tee", "babytee")) return "babytee";
+  if (ezzV6Has(raw, "hoodie")) return "hoodie";
+  if (ezzV6Has(raw, "jacket", "bomber", "varsity", "puffer", "windbreaker")) return "jacket";
+  if (ezzV6Has(raw, "jersey", "football shirt", "soccer shirt")) return "jersey";
+  if (ezzV6Has(raw, "dress", "gown")) return "dress";
+  if (ezzV6Has(raw, "blouse", "coquette", "frilly", "ruffle")) return "blouse";
+  if (ezzV6Has(raw, "suit", "blazer", "formal")) return "suit";
+  return "shirt";
+}
+
+function ezzV6Palette(prompt) {
+  const raw = String(prompt || "").toLowerCase();
+  const colors = {
+    black:   ["#111318", "#1f2430", "#e5e7eb", "#ffffff"],
+    white:   ["#f3f4f6", "#d1d5db", "#111827", "#ffffff"],
+    grey:    ["#6b7280", "#9ca3af", "#f3f4f6", "#ffffff"],
+    gray:    ["#6b7280", "#9ca3af", "#f3f4f6", "#ffffff"],
+    pink:    ["#f472b6", "#f9a8d4", "#831843", "#ffffff"],
+    hotpink: ["#ec4899", "#f9a8d4", "#831843", "#ffffff"],
+    red:     ["#ef4444", "#f87171", "#7f1d1d", "#ffffff"],
+    blue:    ["#3b82f6", "#60a5fa", "#1e3a8a", "#ffffff"],
+    navy:    ["#1e3a8a", "#2563eb", "#dbeafe", "#ffffff"],
+    green:   ["#22c55e", "#86efac", "#064e3b", "#ffffff"],
+    purple:  ["#a855f7", "#c4b5fd", "#581c87", "#ffffff"],
+    lavender:["#c4b5fd", "#ddd6fe", "#4c1d95", "#ffffff"],
+    yellow:  ["#facc15", "#fde68a", "#713f12", "#ffffff"],
+    gold:    ["#f59e0b", "#fcd34d", "#78350f", "#ffffff"],
+    orange:  ["#fb923c", "#fdba74", "#7c2d12", "#ffffff"],
+    brown:   ["#92400e", "#d6b27c", "#fef3c7", "#ffffff"],
+    beige:   ["#e8d8c3", "#f3e6d3", "#7c5b35", "#ffffff"],
+    cream:   ["#f5ead0", "#fff7ed", "#7c5b35", "#ffffff"],
+    silver:  ["#d1d5db", "#f8fafc", "#374151", "#ffffff"],
+    chrome:  ["#cbd5e1", "#ffffff", "#334155", "#ffffff"],
+  };
+  const found = Object.keys(colors).filter(c => raw.includes(c));
+  if (raw.includes("black and white") || raw.includes("black & white")) {
+    return { base:"#111318", shade:"#1f2430", accent:"#f3f4f6", hi:"#ffffff", name:"black-white" };
+  }
+  if (found.length >= 2) {
+    const a = colors[found[0]], b = colors[found[1]];
+    return { base:a[0], shade:a[1], accent:b[0], hi:b[3], name:found[0]+"-"+found[1] };
+  }
+  if (found.length === 1) {
+    const c = colors[found[0]];
+    return { base:c[0], shade:c[1], accent:c[2], hi:c[3], name:found[0] };
+  }
+  return { base:"#f472b6", shade:"#f9a8d4", accent:"#831843", hi:"#ffffff", name:"pink-default" };
+}
+
+function ezzV6Brain(prompt) {
+  const raw = String(prompt || "").toLowerCase();
+  return {
+    raw,
+    p: ezzV6Palette(prompt),
+    ripped: ezzV6Has(raw, "ripped", "distressed", "torn"),
+    chains: ezzV6Has(raw, "chain", "chains"),
+    stars: ezzV6Has(raw, "star", "stars"),
+    hearts: ezzV6Has(raw, "heart", "hearts"),
+    bows: ezzV6Has(raw, "bow", "bows", "ribbon", "coquette"),
+    skull: ezzV6Has(raw, "skull", "skeleton"),
+    cross: ezzV6Has(raw, "cross", "goth"),
+    flames: ezzV6Has(raw, "flame", "fire"),
+    lightning: ezzV6Has(raw, "lightning", "electric"),
+    stripes: ezzV6Has(raw, "stripe", "striped"),
+    checker: ezzV6Has(raw, "checker", "checkerboard"),
+    plaid: ezzV6Has(raw, "plaid", "tartan"),
+    camo: ezzV6Has(raw, "camo", "camouflage"),
+    floral: ezzV6Has(raw, "floral", "flower"),
+    y2k: ezzV6Has(raw, "y2k", "emo", "grunge", "cyber", "streetwear"),
+    cute: ezzV6Has(raw, "cute", "girl", "girly", "coquette", "soft"),
+  };
+}
+
+function ezzV6Canvas() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 585;
+  canvas.height = 559;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0,0,585,559);
+  return { canvas, ctx };
+}
+
+function ezzV6Clip(ctx, panel, fn, bleed = 1) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(panel.x - bleed, panel.y - bleed, panel.w + bleed * 2, panel.h + bleed * 2);
+  ctx.clip();
+  fn();
+  ctx.restore();
+}
+
+function ezzV6Fill(ctx, panel, brain, opts = {}) {
+  const p = brain.p;
+  const fill = opts.color || p.base;
+  const bleed = opts.bleed ?? 4;
+  ezzV6Clip(ctx, panel, () => {
+    ctx.fillStyle = fill;
+    ctx.fillRect(panel.x - bleed, panel.y - bleed, panel.w + bleed*2, panel.h + bleed*2);
+
+    // subtle fabric, not muddy
+    ctx.strokeStyle = "rgba(255,255,255,0.08)";
+    ctx.lineWidth = 1;
+    for (let y = panel.y + 5; y < panel.y + panel.h; y += 14) {
+      ctx.beginPath();
+      ctx.moveTo(panel.x, y);
+      ctx.lineTo(panel.x + panel.w, y + Math.sin(y) * 0.8);
+      ctx.stroke();
+    }
+
+    const grad = ctx.createLinearGradient(panel.x, panel.y, panel.x + panel.w, panel.y + panel.h);
+    grad.addColorStop(0, "rgba(255,255,255,0.10)");
+    grad.addColorStop(1, "rgba(0,0,0,0.10)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(panel.x-2, panel.y-2, panel.w+4, panel.h+4);
+
+    if (brain.stripes) ezzV6Stripes(ctx, panel, brain);
+    if (brain.checker) ezzV6Checker(ctx, panel, brain);
+    if (brain.plaid) ezzV6Plaid(ctx, panel, brain);
+    if (brain.floral) ezzV6Symbols(ctx, panel, "✿", brain);
+    if (brain.stars) ezzV6Symbols(ctx, panel, "★", brain);
+    if (brain.hearts) ezzV6Symbols(ctx, panel, "♡", brain);
+  });
+}
+
+function ezzV6Line(ctx,x1,y1,x2,y2,color,width=1) {
+  ctx.save();
+  ctx.strokeStyle=color;
+  ctx.lineWidth=width;
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);
+  ctx.lineTo(x2,y2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function ezzV6Round(ctx,x,y,w,h,r,fill,stroke) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+  ctx.fillStyle=fill;
+  ctx.fill();
+  if (stroke) { ctx.strokeStyle=stroke; ctx.lineWidth=1; ctx.stroke(); }
+  ctx.restore();
+}
+
+function ezzV6Stripes(ctx, panel, brain) {
+  ctx.fillStyle = ezzV6Rgba(brain.p.accent, 0.18);
+  for (let y = panel.y + 8; y < panel.y + panel.h; y += 22) {
+    ctx.fillRect(panel.x - 2, y, panel.w + 4, 7);
+  }
+}
+
+function ezzV6Checker(ctx, panel, brain) {
+  const s = 14;
+  for (let y=panel.y; y<panel.y+panel.h; y+=s) for (let x=panel.x; x<panel.x+panel.w; x+=s) {
+    if (((x+y)/s)%2<1) { ctx.fillStyle=ezzV6Rgba(brain.p.accent,0.16); ctx.fillRect(x,y,s,s); }
+  }
+}
+
+function ezzV6Plaid(ctx, panel, brain) {
+  for (let x=panel.x+8; x<panel.x+panel.w; x+=18) ezzV6Line(ctx,x,panel.y,x,panel.y+panel.h,ezzV6Rgba(brain.p.accent,0.20),2);
+  for (let y=panel.y+8; y<panel.y+panel.h; y+=18) ezzV6Line(ctx,panel.x,y,panel.x+panel.w,y,ezzV6Rgba(brain.p.hi,0.16),2);
+}
+
+function ezzV6Symbols(ctx, panel, sym, brain) {
+  ctx.font = "bold 13px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = ezzV6Rgba(brain.p.accent, 0.70);
+  for (let i=0; i<4; i++) {
+    ctx.fillText(sym, panel.x + 14 + (i*17)%Math.max(20,panel.w-20), panel.y + 20 + i*23);
+  }
+}
+
+function ezzV6Rgba(hex, a) {
+  if (!hex) return `rgba(255,255,255,${a})`;
+  if (hex.startsWith("rgb")) return hex;
+  const n = parseInt(hex.replace("#",""),16);
+  const r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function ezzV6Bow(ctx, x, y, brain) {
+  const p = brain.p;
+  ctx.save();
+  ctx.fillStyle = ezzV6Rgba(p.accent, 0.85);
+  ctx.beginPath(); ctx.ellipse(x-9,y,10,6,-0.35,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x+9,y,10,6,0.35,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = p.hi;
+  ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function ezzV6Icon(ctx, text, x, y, brain, size=24) {
+  ctx.save();
+  ctx.font = `bold ${size}px Arial`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = brain.p.accent;
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
+
+function ezzV6ExtraFront(ctx, panel, brain, kind) {
+  ezzV6Clip(ctx, panel, () => {
+    const x = panel.x + panel.w/2;
+    const y = panel.y + (kind === "crop" ? 50 : 64);
+    if (brain.bows) ezzV6Bow(ctx, x, y-14, brain);
+    if (brain.skull) ezzV6Icon(ctx, "☠", x, y, brain, 30);
+    if (brain.cross) ezzV6Icon(ctx, "✝", x, y, brain, 28);
+    if (brain.hearts) ezzV6Icon(ctx, "♡", x, y, brain, 28);
+    if (brain.lightning) ezzV6Icon(ctx, "ϟ", x, y, brain, 34);
+  });
+}
+
+/* ----- V6 TOP DESIGNS ----- */
+
+function ezzV6DrawShirt(prompt) {
+  const brain = ezzV6Brain(prompt);
+  const kind = ezzV6Kind(prompt, "Shirt");
+  const { canvas, ctx } = ezzV6Canvas();
+  const p = getPanels();
+
+  EZZ_V6_COUNTER++;
+
+  if (kind === "bikini") {
+    // NO base. Only bikini panels.
+    ezzV6DrawBikini(ctx, p, brain);
+  } else if (kind === "tank") {
+    ezzV6DrawTank(ctx, p, brain);
+  } else if (kind === "crop" || kind === "babytee") {
+    ezzV6DrawCrop(ctx, p, brain, kind);
+  } else if (kind === "corset") {
+    ezzV6DrawCorsetClean(ctx, p, brain);
+  } else if (kind === "hoodie") {
+    ezzV6DrawHoodieClean(ctx, p, brain);
+  } else if (kind === "jacket") {
+    ezzV6DrawJacketClean(ctx, p, brain);
+  } else if (kind === "jersey") {
+    ezzV6DrawJerseyClean(ctx, p, brain);
+  } else if (kind === "blouse" || kind === "dress") {
+    ezzV6DrawBlouseClean(ctx, p, brain, kind);
+  } else if (kind === "suit") {
+    ezzV6DrawSuitClean(ctx, p, brain);
+  } else {
+    ezzV6DrawBasicShirt(ctx, p, brain);
+  }
+
+  return canvas.toDataURL("image/png");
+}
+
+function ezzV6DrawBikini(ctx, p, brain) {
+  // torso front
+  ezzV6Clip(ctx, p.torsoFront, () => {
+    const x = p.torsoFront.x, y = p.torsoFront.y;
+    ctx.fillStyle = brain.p.base;
+    ctx.beginPath(); ctx.moveTo(x+18,y+33); ctx.lineTo(x+58,y+33); ctx.lineTo(x+38,y+72); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x+110,y+33); ctx.lineTo(x+70,y+33); ctx.lineTo(x+90,y+72); ctx.closePath(); ctx.fill();
+    ezzV6Line(ctx,x+38,y+32,x+28,y+8,ezzV6Rgba(brain.p.hi,0.65),2);
+    ezzV6Line(ctx,x+90,y+32,x+100,y+8,ezzV6Rgba(brain.p.hi,0.65),2);
+    ezzV6Line(ctx,x+57,y+33,x+71,y+33,ezzV6Rgba(brain.p.hi,0.75),2);
+    if (brain.bows || brain.cute || brain.hearts) ezzV6Bow(ctx, x+64, y+41, brain);
+    if (brain.stars) ezzV6Symbols(ctx, {x:x+18,y:y+33,w:92,h:42}, "★", brain);
+  });
+
+  // back strap only
+  ezzV6Clip(ctx, p.torsoBack, () => {
+    ezzV6Line(ctx,p.torsoBack.x+18,p.torsoBack.y+46,p.torsoBack.x+110,p.torsoBack.y+46,ezzV6Rgba(brain.p.base,0.9),5);
+    ezzV6Line(ctx,p.torsoBack.x+26,p.torsoBack.y+46,p.torsoBack.x+38,p.torsoBack.y+14,ezzV6Rgba(brain.p.base,0.8),3);
+    ezzV6Line(ctx,p.torsoBack.x+102,p.torsoBack.y+46,p.torsoBack.x+90,p.torsoBack.y+14,ezzV6Rgba(brain.p.base,0.8),3);
+  });
+
+  // side straps
+  [p.torsoLeft, p.torsoRight].forEach(side => {
+    ezzV6Clip(ctx, side, () => {
+      ezzV6Line(ctx, side.x+8, side.y+47, side.x+side.w-8, side.y+47, ezzV6Rgba(brain.p.base,0.9),4);
+    });
+  });
+}
+
+function ezzV6DrawTank(ctx, p, brain) {
+  [p.torsoFront,p.torsoBack,p.torsoLeft,p.torsoRight,p.torsoUp].forEach(panel => ezzV6Fill(ctx, panel, brain));
+  ezzV6Clip(ctx, p.torsoFront, () => {
+    ctx.clearRect(p.torsoFront.x+36,p.torsoFront.y-1,56,18);
+    ctx.clearRect(p.torsoFront.x-2,p.torsoFront.y,p.torsoFront.w+4,10);
+    ezzV6Line(ctx,p.torsoFront.x+28,p.torsoFront.y+20,p.torsoFront.x+100,p.torsoFront.y+20,ezzV6Rgba(brain.p.hi,0.28),2);
+    ezzV6Line(ctx,p.torsoFront.x+30,p.torsoFront.y+20,p.torsoFront.x+45,p.torsoFront.y+5,ezzV6Rgba(brain.p.hi,0.42),3);
+    ezzV6Line(ctx,p.torsoFront.x+98,p.torsoFront.y+20,p.torsoFront.x+83,p.torsoFront.y+5,ezzV6Rgba(brain.p.hi,0.42),3);
+  });
+  ezzV6ExtraFront(ctx, p.torsoFront, brain, "tank");
+}
+
+function ezzV6DrawCrop(ctx, p, brain, kind) {
+  [p.torsoFront,p.torsoBack,p.torsoLeft,p.torsoRight,p.torsoUp].forEach(panel => ezzV6Fill(ctx, panel, brain));
+  [p.rightF,p.rightB,p.rightL,p.rightR,p.leftF,p.leftB,p.leftL,p.leftR].forEach(panel => {
+    ezzV6Clip(ctx, panel, () => {
+      ctx.fillStyle = brain.p.base;
+      ctx.fillRect(panel.x-3,panel.y-3,panel.w+6,panel.h*0.36);
+      ctx.fillStyle = ezzV6Rgba(brain.p.shade,0.35);
+      ctx.fillRect(panel.x-3,panel.y+panel.h*0.30,panel.w+6,8);
+    });
+  });
+  [p.torsoFront,p.torsoBack,p.torsoLeft,p.torsoRight].forEach(panel => {
+    ctx.clearRect(panel.x-4, panel.y+panel.h*0.72, panel.w+8, panel.h*0.30);
+  });
+  ezzV6Clip(ctx, p.torsoFront, () => {
+    ezzV6Line(ctx,p.torsoFront.x+10,p.torsoFront.y+92,p.torsoFront.x+118,p.torsoFront.y+92,ezzV6Rgba(brain.p.hi,0.34),2);
+  });
+  ezzV6ExtraFront(ctx, p.torsoFront, brain, "crop");
+}
+
+function ezzV6DrawCorsetClean(ctx, p, brain) {
+  [p.torsoFront,p.torsoBack,p.torsoLeft,p.torsoRight,p.torsoUp,p.torsoDown].forEach(panel => ezzV6Fill(ctx, panel, brain));
+  ezzV6Clip(ctx, p.torsoFront, () => {
+    const x=p.torsoFront.x,y=p.torsoFront.y;
+    ctx.fillStyle=ezzV6Rgba(brain.p.shade,0.55);
+    ctx.beginPath(); ctx.moveTo(x+22,y+8); ctx.lineTo(x+106,y+8); ctx.lineTo(x+92,y+118); ctx.lineTo(x+36,y+118); ctx.closePath(); ctx.fill();
+    for (let yy=y+24; yy<y+106; yy+=16) {
+      ezzV6Line(ctx,x+50,yy,x+78,yy+10,ezzV6Rgba(brain.p.hi,0.60),1.5);
+      ezzV6Line(ctx,x+78,yy,x+50,yy+10,ezzV6Rgba(brain.p.hi,0.60),1.5);
+    }
+    if (brain.bows) ezzV6Bow(ctx,x+64,y+18,brain);
+  });
+}
+
+function ezzV6DrawHoodieClean(ctx, p, brain) {
+  Object.values(p).forEach(panel => ezzV6Fill(ctx, panel, brain));
+  ezzV6Clip(ctx, p.torsoFront, () => {
+    const x=p.torsoFront.x,y=p.torsoFront.y;
+    ezzV6Line(ctx,x+64,y+10,x+64,y+120,ezzV6Rgba(brain.p.hi,0.35),2);
+    ezzV6Line(ctx,x+50,y+30,x+40,y+76,ezzV6Rgba(brain.p.hi,0.65),2);
+    ezzV6Line(ctx,x+78,y+30,x+88,y+76,ezzV6Rgba(brain.p.hi,0.65),2);
+    ezzV6Round(ctx,x+24,y+82,80,32,8,ezzV6Rgba(brain.p.shade,0.38),ezzV6Rgba(brain.p.hi,0.16));
+    ctx.strokeStyle=ezzV6Rgba(brain.p.hi,0.28); ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x+64,y+20,27,0.12*Math.PI,0.88*Math.PI); ctx.stroke();
+  });
+  ezzV6ExtraFront(ctx, p.torsoFront, brain, "hoodie");
+}
+
+function ezzV6DrawJacketClean(ctx, p, brain) {
+  Object.values(p).forEach(panel => ezzV6Fill(ctx, panel, brain));
+  ezzV6Clip(ctx, p.torsoFront, () => {
+    const x=p.torsoFront.x,y=p.torsoFront.y;
+    ezzV6Line(ctx,x+64,y+6,x+64,y+122,ezzV6Rgba(brain.p.hi,0.40),2);
+    ctx.fillStyle=ezzV6Rgba(brain.p.accent,0.18);
+    ctx.beginPath(); ctx.moveTo(x+18,y+12); ctx.lineTo(x+52,y+12); ctx.lineTo(x+38,y+44); ctx.lineTo(x+20,y+34); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x+110,y+12); ctx.lineTo(x+76,y+12); ctx.lineTo(x+90,y+44); ctx.lineTo(x+108,y+34); ctx.closePath(); ctx.fill();
+    ezzV6Round(ctx,x+14,y+84,28,22,4,ezzV6Rgba(brain.p.shade,0.35),ezzV6Rgba(brain.p.hi,0.12));
+    ezzV6Round(ctx,x+86,y+84,28,22,4,ezzV6Rgba(brain.p.shade,0.35),ezzV6Rgba(brain.p.hi,0.12));
+  });
+  ezzV6ExtraFront(ctx, p.torsoFront, brain, "jacket");
+}
+
+function ezzV6DrawJerseyClean(ctx, p, brain) {
+  Object.values(p).forEach(panel => ezzV6Fill(ctx, panel, brain));
+  ezzV6Clip(ctx, p.torsoFront, () => {
+    const x=p.torsoFront.x,y=p.torsoFront.y;
+    ctx.strokeStyle=ezzV6Rgba(brain.p.hi,0.45); ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x+42,y+8); ctx.lineTo(x+64,y+35); ctx.lineTo(x+86,y+8); ctx.stroke();
+    ctx.fillStyle=ezzV6Rgba(brain.p.hi,0.88); ctx.font="bold 44px Arial"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText("07",x+64,y+78);
+  });
+}
+
+function ezzV6DrawBlouseClean(ctx, p, brain, kind) {
+  [p.torsoFront,p.torsoBack,p.torsoLeft,p.torsoRight,p.torsoUp,p.torsoDown].forEach(panel => ezzV6Fill(ctx, panel, brain));
+  [p.rightF,p.rightB,p.rightL,p.rightR,p.leftF,p.leftB,p.leftL,p.leftR].forEach(panel => {
+    ezzV6Clip(ctx, panel, () => {
+      ctx.fillStyle=brain.p.base; ctx.fillRect(panel.x-3,panel.y-3,panel.w+6,panel.h*0.44);
+    });
+  });
+  ezzV6Clip(ctx, p.torsoFront, () => {
+    ezzV6Line(ctx,p.torsoFront.x+26,p.torsoFront.y+20,p.torsoFront.x+102,p.torsoFront.y+20,ezzV6Rgba(brain.p.hi,0.35),2);
+    if (brain.bows || kind==="dress") ezzV6Bow(ctx,p.torsoFront.x+64,p.torsoFront.y+42,brain);
+  });
+  ezzV6ExtraFront(ctx, p.torsoFront, brain, kind);
+}
+
+function ezzV6DrawSuitClean(ctx, p, brain) {
+  Object.values(p).forEach(panel => ezzV6Fill(ctx, panel, brain));
+  ezzV6Clip(ctx, p.torsoFront, () => {
+    const x=p.torsoFront.x,y=p.torsoFront.y;
+    ctx.fillStyle=ezzV6Rgba(brain.p.hi,0.85); ctx.fillRect(x+48,y+8,32,116);
+    ctx.fillStyle=ezzV6Rgba(brain.p.shade,0.55);
+    ctx.beginPath(); ctx.moveTo(x+5,y+8); ctx.lineTo(x+58,y+55); ctx.lineTo(x+40,y+124); ctx.lineTo(x+5,y+124); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x+123,y+8); ctx.lineTo(x+70,y+55); ctx.lineTo(x+88,y+124); ctx.lineTo(x+123,y+124); ctx.closePath(); ctx.fill();
+    ctx.fillStyle=brain.p.accent; ctx.beginPath(); ctx.moveTo(x+60,y+32); ctx.lineTo(x+68,y+32); ctx.lineTo(x+74,y+104); ctx.lineTo(x+64,y+118); ctx.lineTo(x+54,y+104); ctx.closePath(); ctx.fill();
+  });
+}
+
+function ezzV6DrawBasicShirt(ctx, p, brain) {
+  Object.values(p).forEach(panel => ezzV6Fill(ctx, panel, brain));
+  ezzV6Clip(ctx, p.torsoFront, () => {
+    const x=p.torsoFront.x,y=p.torsoFront.y;
+    ctx.strokeStyle=ezzV6Rgba(brain.p.hi,0.28); ctx.lineWidth=3; ctx.beginPath(); ctx.arc(x+64,y+14,26,0,Math.PI); ctx.stroke();
+  });
+  ezzV6ExtraFront(ctx, p.torsoFront, brain, "shirt");
+}
+
+/* ----- V6 PANTS ----- */
+
+function ezzV6DrawPants(prompt) {
+  const brain = ezzV6Brain(prompt);
+  const kind = ezzV6Kind(prompt, "Pants");
+  const { canvas, ctx } = ezzV6Canvas();
+  const p = getPanels();
+
+  const legPanels = [p.rightL,p.rightB,p.rightR,p.rightF,p.rightU,p.rightD,p.leftL,p.leftB,p.leftR,p.leftF,p.leftU,p.leftD];
+  const waistPanels = [p.torsoFront,p.torsoBack,p.torsoLeft,p.torsoRight,p.torsoUp,p.torsoDown];
+
+  if (kind === "skirt") {
+    waistPanels.forEach(panel => ezzV6Fill(ctx, panel, brain));
+    [p.rightF,p.rightB,p.rightL,p.rightR,p.leftF,p.leftB,p.leftL,p.leftR].forEach(panel => {
+      ezzV6Clip(ctx, panel, () => {
+        ctx.fillStyle=brain.p.base;
+        ctx.fillRect(panel.x-4,panel.y-4,panel.w+8,panel.h*0.62);
+        if (brain.plaid) ezzV6Plaid(ctx, panel, brain);
+        ezzV6Line(ctx,panel.x+2,panel.y+panel.h*0.60,panel.x+panel.w-2,panel.y+panel.h*0.60,ezzV6Rgba(brain.p.hi,0.35),2);
+      });
+    });
+  } else if (kind === "shorts") {
+    waistPanels.forEach(panel => ezzV6Fill(ctx, panel, brain));
+    [p.rightF,p.rightB,p.rightL,p.rightR,p.leftF,p.leftB,p.leftL,p.leftR].forEach(panel => {
+      ezzV6Clip(ctx, panel, () => {
+        ctx.fillStyle=brain.p.base;
+        ctx.fillRect(panel.x-4,panel.y-4,panel.w+8,panel.h*0.55);
+        ezzV6Line(ctx,panel.x+2,panel.y+panel.h*0.53,panel.x+panel.w-2,panel.y+panel.h*0.53,ezzV6Rgba(brain.p.hi,0.35),2);
+      });
+    });
+  } else {
+    [...waistPanels, ...legPanels].forEach(panel => ezzV6Fill(ctx, panel, brain));
+  }
+
+  // waistband
+  [p.torsoFront,p.torsoBack,p.torsoLeft,p.torsoRight].forEach(panel => {
+    ezzV6Clip(ctx, panel, () => {
+      ctx.clearRect(panel.x, panel.y+42, panel.w, panel.h-42);
+      ctx.fillStyle=ezzV6Rgba(brain.p.shade,0.42);
+      ctx.fillRect(panel.x-2,panel.y+6,panel.w+4,26);
+      ezzV6Line(ctx,panel.x+6,panel.y+34,panel.x+panel.w-6,panel.y+34,ezzV6Rgba(brain.p.hi,0.28),2);
+    });
+  });
+
+  [p.rightF,p.leftF].forEach(panel => {
+    ezzV6Clip(ctx, panel, () => {
+      ezzV6Line(ctx,panel.x+panel.w/2,panel.y+4,panel.x+panel.w/2,panel.y+panel.h-6,ezzV6Rgba(brain.p.hi,0.15),1);
+      if (brain.ripped) {
+        for (let i=0;i<3;i++) {
+          const yy=panel.y+36+i*26;
+          ezzV6Line(ctx,panel.x+10,yy,panel.x+panel.w-10,yy-4,ezzV6Rgba(brain.p.hi,0.75),2);
+          ezzV6Line(ctx,panel.x+12,yy+4,panel.x+panel.w-12,yy+1,"rgba(0,0,0,0.25)",4);
+        }
+      }
+      if (brain.chains) {
+        for (let y=panel.y+16;y<panel.y+98;y+=13) {
+          ctx.strokeStyle=ezzV6Rgba(brain.p.hi,0.8); ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(panel.x+panel.w-16,y,7,4,0.5,0,Math.PI*2); ctx.stroke();
+        }
+      }
+    });
+  });
+
+  return canvas.toDataURL("image/png");
+}
+
+/* override main creators */
+createSmartShirt = function(prompt) {
+  return ezzV6DrawShirt(prompt);
+};
+
+createSmartPants = function(prompt) {
+  return ezzV6DrawPants(prompt);
+};
+
+function ezzV6AddVariationButton() {
+  const generate = document.querySelector("#generateBtn, #generate");
+  if (!generate || document.querySelector("#randomizeBtn")) return;
+  const btn = document.createElement("button");
+  btn.id = "randomizeBtn";
+  btn.textContent = "Random Variation 🎲";
+  btn.style.marginTop = "10px";
+  btn.style.width = "100%";
+  btn.addEventListener("click", () => {
+    const extras = ["stars", "bows", "stripes", "hearts", "y2k", "checker", "chrome", "flames", "cross", "chains"];
+    const pick = extras[Math.floor(Math.random() * extras.length)];
+    promptInput.value = (promptInput.value.trim() || "pink top") + " " + pick;
+    generate.click();
+  });
+  generate.insertAdjacentElement("afterend", btn);
+}
+ezzV6AddVariationButton();
