@@ -2846,3 +2846,303 @@ function ezzV6AddVariationButton() {
   generate.insertAdjacentElement("afterend", btn);
 }
 ezzV6AddVariationButton();
+
+/* =======================================
+   EZZAI V7 NO AUTO STRIPES
+   Removes forced fabric lines.
+   Patterns only appear when requested.
+   Adds cleaner hoodie / shirt details.
+======================================= */
+
+function ezzV7SoftShade(ctx, panel, brain, amount = 0.10) {
+  ezzV6Clip(ctx, panel, () => {
+    const grad = ctx.createLinearGradient(panel.x, panel.y, panel.x + panel.w, panel.y + panel.h);
+    grad.addColorStop(0, `rgba(255,255,255,${amount})`);
+    grad.addColorStop(0.55, "rgba(255,255,255,0.00)");
+    grad.addColorStop(1, `rgba(0,0,0,${amount})`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(panel.x - 2, panel.y - 2, panel.w + 4, panel.h + 4);
+  });
+}
+
+function ezzV7Fill(ctx, panel, brain, opts = {}) {
+  const p = brain.p;
+  const fill = opts.color || p.base;
+  const bleed = opts.bleed ?? 4;
+
+  ezzV6Clip(ctx, panel, () => {
+    ctx.fillStyle = fill;
+    ctx.fillRect(panel.x - bleed, panel.y - bleed, panel.w + bleed * 2, panel.h + bleed * 2);
+
+    // No automatic stripy fabric lines. Only a soft shadow.
+    const shade = ctx.createLinearGradient(panel.x, panel.y, panel.x + panel.w, panel.y + panel.h);
+    shade.addColorStop(0, "rgba(255,255,255,0.08)");
+    shade.addColorStop(0.5, "rgba(255,255,255,0.00)");
+    shade.addColorStop(1, "rgba(0,0,0,0.10)");
+    ctx.fillStyle = shade;
+    ctx.fillRect(panel.x - 2, panel.y - 2, panel.w + 4, panel.h + 4);
+
+    // Only draw these if the prompt asks for them.
+    if (brain.stripes) ezzV6Stripes(ctx, panel, brain);
+    if (brain.checker) ezzV6Checker(ctx, panel, brain);
+    if (brain.plaid) ezzV6Plaid(ctx, panel, brain);
+    if (brain.floral) ezzV6Symbols(ctx, panel, "✿", brain);
+    if (brain.stars) ezzV6Symbols(ctx, panel, "★", brain);
+    if (brain.hearts) ezzV6Symbols(ctx, panel, "♡", brain);
+  });
+}
+
+function ezzV7FillMany(ctx, panels, brain, opts = {}) {
+  panels.forEach(panel => ezzV7Fill(ctx, panel, brain, opts));
+}
+
+function ezzV7DrawSeam(ctx, panel, brain, type = "panel") {
+  const c = brain.p;
+  ezzV6Clip(ctx, panel, () => {
+    if (type === "side") {
+      ezzV6Line(ctx, panel.x + 5, panel.y + 7, panel.x + 5, panel.y + panel.h - 7, ezzV6Rgba(c.hi, 0.12), 1);
+      ezzV6Line(ctx, panel.x + panel.w - 5, panel.y + 7, panel.x + panel.w - 5, panel.y + panel.h - 7, "rgba(0,0,0,0.12)", 1);
+    } else {
+      ezzV6Line(ctx, panel.x + 4, panel.y + 4, panel.x + panel.w - 4, panel.y + 4, ezzV6Rgba(c.hi, 0.10), 1);
+    }
+  });
+}
+
+function ezzV7DrawHoodie(ctx, p, brain) {
+  const panels = Object.values(p);
+  ezzV7FillMany(ctx, panels, brain);
+
+  // Sleeves have subtle cuff blocks, not stripes.
+  [p.rightF,p.rightB,p.rightL,p.rightR,p.leftF,p.leftB,p.leftL,p.leftR].forEach(panel => {
+    ezzV7DrawSeam(ctx, panel, brain, "side");
+    ezzV6Clip(ctx, panel, () => {
+      ctx.fillStyle = ezzV6Rgba(brain.p.shade, 0.22);
+      ctx.fillRect(panel.x + 6, panel.y + panel.h - 26, panel.w - 12, 16);
+      if (brain.y2k || brain.raw.includes("two tone") || brain.raw.includes("accent")) {
+        ctx.fillStyle = ezzV6Rgba(brain.p.accent, 0.22);
+        ctx.fillRect(panel.x + 7, panel.y + 14, panel.w - 14, 18);
+      }
+    });
+  });
+
+  [p.rightD,p.leftD,p.torsoDown].forEach(panel => {
+    ezzV6Clip(ctx, panel, () => {
+      ctx.fillStyle = ezzV6Rgba(brain.p.shade, 0.34);
+      ctx.fillRect(panel.x - 2, panel.y - 2, panel.w + 4, panel.h + 4);
+    });
+  });
+
+  ezzV6Clip(ctx, p.torsoFront, () => {
+    const x = p.torsoFront.x, y = p.torsoFront.y;
+    // body side shading
+    ctx.fillStyle = ezzV6Rgba(brain.p.shade, 0.18);
+    ctx.fillRect(x + 8, y + 8, 20, 112);
+    ctx.fillRect(x + 100, y + 8, 20, 112);
+
+    // hood neck
+    ctx.strokeStyle = ezzV6Rgba(brain.p.hi, 0.30);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x + 64, y + 20, 28, 0.12 * Math.PI, 0.88 * Math.PI);
+    ctx.stroke();
+
+    // zipper and drawstrings
+    ezzV6Line(ctx, x + 64, y + 12, x + 64, y + 119, ezzV6Rgba(brain.p.hi, 0.28), 2);
+    ezzV6Line(ctx, x + 51, y + 32, x + 42, y + 76, ezzV6Rgba(brain.p.hi, 0.65), 2);
+    ezzV6Line(ctx, x + 77, y + 32, x + 86, y + 76, ezzV6Rgba(brain.p.hi, 0.65), 2);
+
+    // pocket
+    ezzV6Round(ctx, x + 25, y + 82, 78, 32, 8, ezzV6Rgba(brain.p.shade, 0.36), ezzV6Rgba(brain.p.hi, 0.18));
+
+    // chest graphic
+    if (brain.lightning) ezzV6Icon(ctx, "ϟ", x + 64, y + 60, brain, 32);
+    if (brain.skull) ezzV6Icon(ctx, "☠", x + 64, y + 60, brain, 30);
+    if (brain.hearts) ezzV6Icon(ctx, "♡", x + 64, y + 60, brain, 30);
+    if (brain.cross) ezzV6Icon(ctx, "✝", x + 64, y + 60, brain, 28);
+  });
+
+  ezzV6Clip(ctx, p.torsoBack, () => {
+    const x = p.torsoBack.x, y = p.torsoBack.y;
+    ctx.fillStyle = ezzV6Rgba(brain.p.shade, 0.16);
+    ctx.fillRect(x + 16, y + 14, 96, 96);
+    ezzV6Line(ctx, x + 16, y + 25, x + 112, y + 25, ezzV6Rgba(brain.p.hi, 0.12), 2);
+    if (brain.skull) ezzV6Icon(ctx, "☠", x + 64, y + 64, brain, 34);
+    if (brain.lightning) ezzV6Icon(ctx, "ϟ", x + 64, y + 64, brain, 36);
+  });
+}
+
+function ezzV7DrawBasicShirt(ctx, p, brain) {
+  ezzV7FillMany(ctx, Object.values(p), brain);
+
+  [p.rightF,p.rightB,p.rightL,p.rightR,p.leftF,p.leftB,p.leftL,p.leftR].forEach(panel => {
+    ezzV7DrawSeam(ctx, panel, brain, "side");
+  });
+
+  ezzV6Clip(ctx, p.torsoFront, () => {
+    const x = p.torsoFront.x, y = p.torsoFront.y;
+    ctx.strokeStyle = ezzV6Rgba(brain.p.hi, 0.30);
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(x + 64, y + 14, 27, 0, Math.PI);
+    ctx.stroke();
+
+    // chest panel / graphic area
+    ctx.fillStyle = ezzV6Rgba(brain.p.shade, 0.10);
+    ctx.fillRect(x + 18, y + 36, 92, 52);
+
+    if (brain.skull) ezzV6Icon(ctx, "☠", x + 64, y + 62, brain, 30);
+    if (brain.hearts) ezzV6Icon(ctx, "♡", x + 64, y + 62, brain, 30);
+    if (brain.stars) ezzV6Icon(ctx, "★", x + 64, y + 62, brain, 28);
+    if (brain.lightning) ezzV6Icon(ctx, "ϟ", x + 64, y + 62, brain, 32);
+  });
+}
+
+function ezzV7DrawBikini(ctx, p, brain) {
+  // Transparent unused panels. Bigger bikini than V6.
+  ezzV6Clip(ctx, p.torsoFront, () => {
+    const x = p.torsoFront.x, y = p.torsoFront.y;
+    ctx.fillStyle = brain.p.base;
+
+    // Bigger cups
+    ctx.beginPath();
+    ctx.ellipse(x + 42, y + 57, 26, 23, -0.18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(x + 86, y + 57, 26, 23, 0.18, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Inner shading
+    ctx.fillStyle = ezzV6Rgba(brain.p.shade, 0.22);
+    ctx.beginPath();
+    ctx.ellipse(x + 42, y + 59, 17, 14, -0.18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(x + 86, y + 59, 17, 14, 0.18, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Straps
+    ezzV6Line(ctx, x + 42, y + 35, x + 28, y + 8, ezzV6Rgba(brain.p.base, 0.95), 4);
+    ezzV6Line(ctx, x + 86, y + 35, x + 100, y + 8, ezzV6Rgba(brain.p.base, 0.95), 4);
+    ezzV6Line(ctx, x + 17, y + 58, x + 111, y + 58, ezzV6Rgba(brain.p.base, 0.55), 3);
+
+    if (brain.bows || brain.cute || brain.hearts) ezzV6Bow(ctx, x + 64, y + 56, brain);
+    if (brain.stars) ezzV6Symbols(ctx, {x:x+18,y:y+34,w:92,h:46}, "★", brain);
+  });
+
+  ezzV6Clip(ctx, p.torsoBack, () => {
+    ezzV6Line(ctx, p.torsoBack.x + 18, p.torsoBack.y + 49, p.torsoBack.x + 110, p.torsoBack.y + 49, ezzV6Rgba(brain.p.base, 0.95), 5);
+    ezzV6Line(ctx, p.torsoBack.x + 30, p.torsoBack.y + 49, p.torsoBack.x + 42, p.torsoBack.y + 14, ezzV6Rgba(brain.p.base, 0.90), 3);
+    ezzV6Line(ctx, p.torsoBack.x + 98, p.torsoBack.y + 49, p.torsoBack.x + 86, p.torsoBack.y + 14, ezzV6Rgba(brain.p.base, 0.90), 3);
+  });
+
+  [p.torsoLeft, p.torsoRight].forEach(side => {
+    ezzV6Clip(ctx, side, () => {
+      ezzV6Line(ctx, side.x + 8, side.y + 49, side.x + side.w - 8, side.y + 49, ezzV6Rgba(brain.p.base, 0.95), 5);
+    });
+  });
+}
+
+function ezzV7DrawCrop(ctx, p, brain, kind) {
+  [p.torsoFront,p.torsoBack,p.torsoLeft,p.torsoRight,p.torsoUp].forEach(panel => ezzV7Fill(ctx, panel, brain));
+
+  // short sleeves only
+  [p.rightF,p.rightB,p.rightL,p.rightR,p.leftF,p.leftB,p.leftL,p.leftR].forEach(panel => {
+    ezzV6Clip(ctx, panel, () => {
+      ctx.fillStyle = brain.p.base;
+      ctx.fillRect(panel.x - 3, panel.y - 3, panel.w + 6, panel.h * 0.36);
+      ctx.fillStyle = ezzV6Rgba(brain.p.shade, 0.22);
+      ctx.fillRect(panel.x - 3, panel.y + panel.h * 0.30, panel.w + 6, 8);
+    });
+  });
+
+  [p.torsoFront,p.torsoBack,p.torsoLeft,p.torsoRight].forEach(panel => {
+    ctx.clearRect(panel.x - 4, panel.y + panel.h * 0.72, panel.w + 8, panel.h * 0.30);
+  });
+
+  ezzV6Clip(ctx, p.torsoFront, () => {
+    ezzV6Line(ctx, p.torsoFront.x + 10, p.torsoFront.y + 92, p.torsoFront.x + 118, p.torsoFront.y + 92, ezzV6Rgba(brain.p.hi,0.34), 2);
+  });
+  ezzV6ExtraFront(ctx, p.torsoFront, brain, "crop");
+}
+
+function ezzV7DrawPants(prompt) {
+  const brain = ezzV6Brain(prompt);
+  const kind = ezzV6Kind(prompt, "Pants");
+  const { canvas, ctx } = ezzV6Canvas();
+  const p = getPanels();
+
+  const legPanels = [p.rightL,p.rightB,p.rightR,p.rightF,p.rightU,p.rightD,p.leftL,p.leftB,p.leftR,p.leftF,p.leftU,p.leftD];
+  const waistPanels = [p.torsoFront,p.torsoBack,p.torsoLeft,p.torsoRight,p.torsoUp,p.torsoDown];
+
+  if (kind === "skirt") {
+    waistPanels.forEach(panel => ezzV7Fill(ctx, panel, brain));
+    [p.rightF,p.rightB,p.rightL,p.rightR,p.leftF,p.leftB,p.leftL,p.leftR].forEach(panel => {
+      ezzV6Clip(ctx, panel, () => {
+        ctx.fillStyle = brain.p.base;
+        ctx.fillRect(panel.x - 4, panel.y - 4, panel.w + 8, panel.h * 0.62);
+        if (brain.plaid) ezzV6Plaid(ctx, panel, brain);
+        ezzV6Line(ctx, panel.x + 2, panel.y + panel.h * 0.60, panel.x + panel.w - 2, panel.y + panel.h * 0.60, ezzV6Rgba(brain.p.hi,0.35), 2);
+      });
+    });
+  } else if (kind === "shorts") {
+    waistPanels.forEach(panel => ezzV7Fill(ctx, panel, brain));
+    [p.rightF,p.rightB,p.rightL,p.rightR,p.leftF,p.leftB,p.leftL,p.leftR].forEach(panel => {
+      ezzV6Clip(ctx, panel, () => {
+        ctx.fillStyle = brain.p.base;
+        ctx.fillRect(panel.x - 4, panel.y - 4, panel.w + 8, panel.h * 0.55);
+        ezzV6Line(ctx, panel.x + 2, panel.y + panel.h * 0.53, panel.x + panel.w - 2, panel.y + panel.h * 0.53, ezzV6Rgba(brain.p.hi,0.35), 2);
+      });
+    });
+  } else {
+    [...waistPanels, ...legPanels].forEach(panel => ezzV7Fill(ctx, panel, brain));
+  }
+
+  [p.torsoFront,p.torsoBack,p.torsoLeft,p.torsoRight].forEach(panel => {
+    ezzV6Clip(ctx, panel, () => {
+      ctx.clearRect(panel.x, panel.y + 42, panel.w, panel.h - 42);
+      ctx.fillStyle = ezzV6Rgba(brain.p.shade, 0.34);
+      ctx.fillRect(panel.x - 2, panel.y + 6, panel.w + 4, 26);
+      ezzV6Line(ctx, panel.x + 6, panel.y + 34, panel.x + panel.w - 6, panel.y + 34, ezzV6Rgba(brain.p.hi,0.28), 2);
+    });
+  });
+
+  [p.rightF,p.leftF].forEach(panel => {
+    ezzV6Clip(ctx, panel, () => {
+      ezzV6Line(ctx, panel.x + panel.w / 2, panel.y + 4, panel.x + panel.w / 2, panel.y + panel.h - 6, ezzV6Rgba(brain.p.hi,0.15), 1);
+      if (brain.ripped) {
+        for (let i=0;i<3;i++) {
+          const yy = panel.y + 36 + i * 26;
+          ezzV6Line(ctx, panel.x + 10, yy, panel.x + panel.w - 10, yy - 4, ezzV6Rgba(brain.p.hi,0.75), 2);
+          ezzV6Line(ctx, panel.x + 12, yy + 4, panel.x + panel.w - 12, yy + 1, "rgba(0,0,0,0.25)", 4);
+        }
+      }
+    });
+  });
+
+  return canvas.toDataURL("image/png");
+}
+
+createSmartShirt = function(prompt) {
+  const brain = ezzV6Brain(prompt);
+  const kind = ezzV6Kind(prompt, "Shirt");
+  const { canvas, ctx } = ezzV6Canvas();
+  const p = getPanels();
+
+  if (kind === "bikini") {
+    ezzV7DrawBikini(ctx, p, brain);
+  } else if (kind === "crop" || kind === "babytee") {
+    ezzV7DrawCrop(ctx, p, brain, kind);
+  } else if (kind === "hoodie") {
+    ezzV7DrawHoodie(ctx, p, brain);
+  } else if (kind === "jacket") {
+    ezzV7DrawJacket(ctx, p, brain);
+  } else {
+    ezzV7DrawBasicShirt(ctx, p, brain);
+  }
+
+  return canvas.toDataURL("image/png");
+};
+
+createSmartPants = function(prompt) {
+  return ezzV7DrawPants(prompt);
+};

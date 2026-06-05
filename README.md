@@ -1,24 +1,22 @@
-# EzzCustoms V6 No-Base Clean Designs
+# EzzCustoms V7 No-Stripes
 
-This version fixes the ugly dark-base problem.
+This version removes the automatic stripy texture that made every design look bad.
 
-## What changed
-- Unused panels stay transparent.
-- Bikini no longer fills arms/legs with a random dark base.
-- Tank tops, crop tops and baby tees use only the panels they need.
-- Colours are brighter and less muddy.
-- Designs have cleaner shapes.
-- Added a Random Variation button.
-- Pants still use full pants panels because Roblox classic pants need leg panels, but the torso area is kept mostly waistband only.
+## Fixes
+- No forced horizontal fabric lines.
+- Patterns only appear when requested.
+- Cleaner hoodie layout.
+- Cleaner shirt layout.
+- Bigger bikini top.
+- Crop tops still keep unused areas transparent.
+- Pants have cleaner shading.
 
-## Good prompts
-- pink bikini top with bows
-- white tank top with hearts
-- black cropped y2k top with stars
+## Try prompts
 - purple hoodie with lightning
-- blue jersey with number 7
-- red plaid skirt
+- pink bikini top with bows
+- black cropped y2k top with stars
+- blue shirt with skull
+- red jacket with black accents
 - black ripped jeans with chains
-- cream coquette blouse with bows
 
-Upload these files to GitHub, commit, then Netlify redeploys.
+Upload to GitHub, commit, then Netlify redeploys.
